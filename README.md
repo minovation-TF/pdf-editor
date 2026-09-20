@@ -33,19 +33,15 @@
 
 PDF 파일, 메모, 내 문구, 스티커 데이터는 통계 서버로 보내지 않습니다.
 
-### 1. Cloudflare D1 카운터 배포
+### 1. Cloudflare D1 카운터
 
-Cloudflare 계정에서 Worker와 D1을 한 번 연결해야 실제 카운팅이 시작됩니다.
+현재 `pdf-editor-counter` Worker와 `pdf-editor-visits` D1 데이터베이스가 연결되어 있습니다. 허용된 웹 주소는 `https://minovation-tf.github.io`이며, 편집기 화면에는 같은 브라우저 기준 하루 한 번 방문 수가 더해집니다.
 
-1. `worker` 폴더에서 D1 데이터베이스 `meritz-pdf-editor-counter`를 만듭니다.
-2. 발급된 D1 ID를 `worker/wrangler.toml`의 `database_id`에 넣습니다.
-3. `worker/schema.sql`을 D1에 적용한 뒤 Worker를 배포합니다.
-4. 배포된 Worker 주소를 `config.js`의 `counterEndpoint`에 넣습니다.
-5. GitHub Pages 주소가 생기면 `worker/wrangler.toml`의 `ALLOWED_ORIGIN`을 그 주소로 바꾸는 것을 권장합니다.
+Worker 코드를 바꾼 뒤에는 `worker` 폴더에서 `pnpm install`, `pnpm run deploy` 순서로 다시 배포합니다. 데이터베이스 구조는 `worker/schema.sql`에 있습니다.
 
 ### 2. Cloudflare Web Analytics 연결
 
-Cloudflare Web Analytics에서 사이트를 추가한 뒤 받은 토큰을 `config.js`의 `cloudflareBeaconToken`에 넣습니다. 이 값은 공개용 사이트 토큰이며 비밀 API 키를 넣으면 안 됩니다.
+`minovation-tf.github.io`가 Cloudflare Web Analytics에 등록되어 있고 공개용 사이트 토큰은 `config.js`에 연결되어 있습니다. 상세 방문 통계는 Cloudflare 계정에 로그인한 관리자만 볼 수 있습니다. 이 토큰은 공개용 사이트 토큰이며 비밀 API 키를 넣으면 안 됩니다.
 
 `config.js`의 두 값이 비어 있으면 편집기는 외부 통신 없이 기존처럼 작동하고 방문 숫자도 숨겨집니다.
 
