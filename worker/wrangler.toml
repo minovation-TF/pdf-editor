@@ -1,0 +1,11 @@
+name = "meritz-pdf-editor-counter"
+main = "src/index.js"
+compatibility_date = "2026-09-20"
+
+[vars]
+ALLOWED_ORIGIN = "*"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "meritz-pdf-editor-counter"
+database_id = "여기에_D1_DATABASE_ID_입력"
