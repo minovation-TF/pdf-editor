@@ -144,19 +144,18 @@ svg.lines{position:absolute;inset:0;pointer-events:none;overflow:visible}
 .drag{position:absolute;border:1.5px dashed var(--accent);background:rgba(0,113,227,.06);border-radius:4px;pointer-events:none}
 .memo{position:absolute;border:1px solid rgba(60,60,67,.14);border-radius:12px;box-shadow:0 5px 16px rgba(0,0,0,.10);overflow:visible}
 .memo.on{box-shadow:0 0 0 2px var(--accent),0 8px 22px rgba(0,0,0,.14)}
-.memo .dragzone{position:absolute;right:18px;top:3px;width:32px;height:17px;border-radius:6px;cursor:grab;z-index:4;touch-action:none;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.68);border:1px solid rgba(60,60,67,.12);opacity:0;transition:opacity .14s,background .14s,color .14s;color:rgba(29,29,31,.62)}
+.memo .dragzone{position:absolute;right:-8px;top:-8px;width:20px;height:20px;border-radius:50%;cursor:grab;z-index:7;touch-action:none;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid var(--line2);box-shadow:0 2px 7px rgba(0,0,0,.16);opacity:0;transition:opacity .14s,transform .14s,color .14s;color:var(--ink2)}
 .memo .dragzone:active{cursor:grabbing}
-.memo .movegrip{font-size:9px;font-weight:600;line-height:1;letter-spacing:-.2px;pointer-events:none}
-.memo .dragzone:hover{background:rgba(255,255,255,.92);color:var(--accent)}
-.memo .x{position:absolute;right:3px;top:4px;width:12px;height:12px;padding:0;border-radius:50%;font-size:7px;line-height:12px;text-align:center;color:rgba(0,0,0,.42);z-index:5;opacity:0;transition:opacity .14s}
+.memo .movegrip{font-size:12px;font-weight:600;line-height:1;pointer-events:none}
+.memo .dragzone:hover{color:var(--accent);transform:scale(1.08)}
+.memo .x{display:none}
 .memo.on .dragzone,.memo.on .x{opacity:1}
-.memo .x:hover{background:rgba(255,255,255,.55);color:var(--danger)}
 .memo textarea{display:block;position:relative;z-index:2;width:100%;height:100%;border:0;outline:0;background:transparent;resize:none;overflow:auto;padding:9px 11px;margin:0}
-.memo .mrz{position:absolute;right:-5px;bottom:-5px;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 0 1.5px var(--accent);cursor:nwse-resize;display:none;z-index:5}
+.memo .mrz{position:absolute;right:-5px;bottom:-5px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 0 0 1.5px var(--accent),0 2px 6px rgba(0,0,0,.16);cursor:nwse-resize;display:none;z-index:5}
 .memo.on .mrz{display:block}
-.memo-tools{position:absolute;display:flex;align-items:center;gap:3px;z-index:9;transform:translateY(-100%);margin-top:-8px;padding:4px 5px;border:1px solid rgba(255,255,255,.72);border-radius:12px;background:rgba(246,246,248,.82);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 8px 24px rgba(0,0,0,.13)}
-.memo-tools button{min-width:24px;height:23px;padding:0 6px;border-radius:6px;font-size:11px;color:var(--ink2)}
-.memo-tools button:hover,.memo-tools button.on{background:var(--fill2);color:var(--accent)}
+.memo-tools{gap:4px}
+.memo-tools button{min-width:25px;height:24px;padding:0 7px}
+.memo-tools button:hover,.memo-tools button.on{background:var(--fill);color:var(--accent)}
 .memo-tools .tc{min-width:17px;width:17px;height:17px;padding:0;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
 .memo-tools .tc.on{box-shadow:0 0 0 2px #fff,0 0 0 3px var(--accent)}
 .sticker{position:absolute;cursor:move;border-radius:8px}
@@ -204,8 +203,12 @@ svg.lines{position:absolute;inset:0;pointer-events:none;overflow:visible}
 .card .btn{margin-top:18px;padding:10px 22px;font-size:13px}
 body.dragging .card{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft),var(--shadow)}
 #brandci{position:fixed;right:24px;bottom:22px;width:210px;height:auto;object-fit:contain;border-radius:0;z-index:24;filter:none;background:transparent;user-select:none;-webkit-user-drag:none}
-#visitstat{display:none;align-items:center;gap:6px;padding:6px 10px;border-radius:980px;background:var(--fill);color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+#visitstat{display:none;align-items:center;gap:9px;padding:6px 11px 6px 8px;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.07);font-variant-numeric:tabular-nums;white-space:nowrap}
 #visitstat.on{display:inline-flex}
+#visitstat .vicon{display:flex;align-items:center;justify-content:center;width:25px;height:25px;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-size:12px}
+#visitstat .vcopy{display:flex;flex-direction:column;gap:1px;line-height:1.15}
+#visitstat .vlabel{font-size:9.5px;color:var(--muted);font-weight:550}
+#visitstat .vnums{font-size:11.5px;color:var(--ink);font-weight:650}
 #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:rgba(28,28,30,.88);backdrop-filter:blur(12px);color:#fff;
   padding:10px 16px;border-radius:14px;font-size:12.5px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50;max-width:80vw;box-shadow:0 8px 30px rgba(0,0,0,.25)}
 #toast.show{opacity:1}
@@ -233,7 +236,7 @@ body.stk-on #toast{bottom:152px}
   </div>
   <button class="btn ghost" id="undo" title="되돌리기 (Ctrl+Z)" disabled>되돌리기</button>
   <span class="spacer"></span>
-  <span id="visitstat" title="브라우저 기준 방문 횟수"></span>
+  <span id="visitstat" aria-live="polite" title="같은 브라우저에서는 하루 한 번 집계됩니다"></span>
   <div class="savegrp">
     <div class="seg savefmt" aria-label="저장 파일 형식">
       <label><input type="radio" name="fmt" value="pdf" checked><span>PDF</span></label>
@@ -267,7 +270,7 @@ body.stk-on #toast{bottom:152px}
     </section>
 
     <div class="note">PDF와 내 문구는 서버로 전송되지 않습니다. 내 문구는 사용자별 브라우저에 따로 저장되며, 같은 PC의 같은 브라우저 프로필을 함께 쓰는 경우에만 공유됩니다. 원본 PDF는 바뀌지 않습니다.<br><br>
-    형광펜 : 글자를 끌거나 더블클릭하면 색을 고르는 창이 뜹니다<br>영역 : 그린 뒤 이동·크기·색 변경 · 메모 : 다시 눌러 글자 꾸미기<br>스티커 : 도구를 누르면 아래에서 고릅니다 · Delete 삭제 · Ctrl+Z 되돌리기</div>
+    형광펜 : 글자를 끌거나 더블클릭해 연속으로 칠할 수 있습니다<br>영역·메모 : 선택하면 같은 편집 막대가 뜨고 이동·크기·색을 바꿀 수 있습니다<br>스티커 : 도구를 누르면 아래에서 고릅니다 · Delete 삭제 · Ctrl+Z 되돌리기</div>
   </aside>
   <section id="viewer">
     <div id="pages"></div>
@@ -372,7 +375,8 @@ const COLORS = [
   { name: '핑크', hex: '#F6C1CC', line: '#9C5060', paper: '#FBE3E8' },
   { name: '블루', hex: '#BFD7FF', line: '#496F9F', paper: '#E3EDFC' },
 ];
-const MEMO_TEXT_COLORS = ['#1D1D1F', '#5C5C5E', '#285C86', '#86504A'];
+const MEMO_TEXT_COLORS = ['#111111', '#E03131', '#1971C2', '#2F9E44'];
+const MEMO_TEXT_COLOR_NAMES = ['검정', '빨강', '파랑', '초록'];
 const PHRASES = [];   // 처음 배포할 때 넣어둘 문구가 있으면 여기에 (예: ['진단 확정되면 1회 지급'])
 const STK_IMG_W = 58;        // 내 이미지 기본 폭 (pt) — 붙인 뒤 모서리로 조절
 const MEMO_W = 150;          // 메모 상자 폭 (pt)
@@ -902,7 +906,7 @@ function renderAnn() {
       if (!a.h) a.h = 86; if (!a.fs) a.fs = MEMO_FS; if (!a.textColor) a.textColor = MEMO_TEXT_COLORS[0];
       const paper = c.paper || c.hex;
       Object.assign(m.style, { left: a.x * k + 'px', top: a.y * k + 'px', width: a.w * k + 'px', height: a.h * k + 'px', background: hexRgba(paper, .64) });
-      m.innerHTML = '<div class="dragzone" title="끌어서 메모 이동"><span class="movegrip">이동</span></div><button class="x" title="메모 지우기">✕</button>' +
+      m.innerHTML = '<div class="dragzone" title="끌어서 메모 이동"><span class="movegrip">✥</span></div>' +
         '<textarea spellcheck="false" placeholder="메모 입력"></textarea><span class="mrz" title="끌어서 크기 조절"></span>';
       const ta = m.querySelector('textarea');
       ta.value = a.text;
@@ -912,16 +916,15 @@ function renderAnn() {
       ta.addEventListener('focus', () => { pushed = false; if (S.sel !== a.id) setTimeout(() => select(a.id, true), 0); });
       ta.addEventListener('input', () => { if (!pushed) { pushUndo(); pushed = true; } a.text = ta.value; S.dirty = true; drawLines(P); renderList(); });
       ta.addEventListener('pointerdown', (e) => e.stopPropagation());
-      m.querySelector('.x').addEventListener('pointerdown', (e) => e.stopPropagation());
-      m.querySelector('.x').addEventListener('click', () => delAnn(a.id));
       dragMemo(m.querySelector('.dragzone'), a, P, m);
       resizeMemo(m.querySelector('.mrz'), a, P, m);
       if (S.sel === a.id) {
-        const tools = document.createElement('div'); tools.className = 'memo-tools'; tools.dataset.for = a.id;
+        const tools = document.createElement('div'); tools.className = 'ft memo-tools'; tools.dataset.for = a.id;
         Object.assign(tools.style, { left: a.x * k + 'px', top: a.y * k + 'px' });
         tools.innerHTML = '<button data-act="bold" class="' + (a.bold ? 'on' : '') + '" title="굵게"><b>B</b></button>' +
           '<button data-act="smaller" title="글자 작게">A−</button><button data-act="larger" title="글자 크게">A＋</button>' +
-          MEMO_TEXT_COLORS.map((col) => '<button class="tc' + (a.textColor === col ? ' on' : '') + '" data-color="' + col + '" style="background:' + col + '" title="글자색"></button>').join('');
+          MEMO_TEXT_COLORS.map((col, i) => '<button class="tc' + (a.textColor === col ? ' on' : '') + '" data-color="' + col + '" style="background:' + col + '" title="' + MEMO_TEXT_COLOR_NAMES[i] + '"></button>').join('') +
+          '<button data-act="del" title="메모 삭제">삭제</button>';
         tools.addEventListener('pointerdown', (e) => e.stopPropagation());
         tools.addEventListener('click', (e) => {
           const b = e.target.closest('button'); if (!b) return;
@@ -929,10 +932,17 @@ function renderAnn() {
           if (b.dataset.act === 'bold') a.bold = !a.bold;
           else if (b.dataset.act === 'smaller') a.fs = Math.max(7, (a.fs || MEMO_FS) - 1);
           else if (b.dataset.act === 'larger') a.fs = Math.min(16, (a.fs || MEMO_FS) + 1);
+          else if (b.dataset.act === 'del') { delAnn(a.id); return; }
           else if (b.dataset.color) a.textColor = b.dataset.color;
           changed(); select(a.id, true);
         });
         P.layer.appendChild(tools);
+        const maxLeft = Math.max(4, P.w * k - tools.offsetWidth - 4);
+        tools.style.left = Math.min(maxLeft, Math.max(4, a.x * k)) + 'px';
+        if (a.y * k < tools.offsetHeight + 10) {
+          tools.classList.add('below');
+          tools.style.top = (a.y + a.h) * k + 'px';
+        }
       }
     }
   }
@@ -1128,7 +1138,6 @@ function applyPend(ci) {
   hideSelPop();
   S.dirty = true; renderAnn(); renderList();
   if (first) select(first.id);
-  setTool('sel');
 }
 document.addEventListener('pointerdown', (e) => { if (!e.target.closest('#selpop')) hideSelPop(); }, true);
 document.addEventListener('dragstart', (e) => { if (e.target.closest && e.target.closest('.textLayer')) e.preventDefault(); });
@@ -1454,7 +1463,9 @@ async function initVisitStats() {
     const data = await res.json();
     if (!counted) localStorage.setItem(key, '1');
     if (Number.isFinite(data.today) && Number.isFinite(data.total)) {
-      const el = $('#visitstat'); el.textContent = '오늘 ' + data.today.toLocaleString('ko-KR') + ' · 누적 ' + data.total.toLocaleString('ko-KR'); el.classList.add('on');
+      const el = $('#visitstat');
+      el.innerHTML = '<span class="vicon">↗</span><span class="vcopy"><span class="vlabel">방문 현황</span><span class="vnums">오늘 ' + data.today.toLocaleString('ko-KR') + ' · 누적 ' + data.total.toLocaleString('ko-KR') + '</span></span>';
+      el.classList.add('on');
     }
   } catch (e) { console.warn('방문 통계를 불러오지 못했습니다.', e); }
 }
