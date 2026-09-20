@@ -186,12 +186,11 @@ svg.lines{position:absolute;inset:0;pointer-events:none;overflow:visible}
 .stkclose{margin-left:auto;width:27px;height:27px;border-radius:50%;background:var(--fill);color:var(--muted);font-size:12px}.stkclose:hover{background:var(--fill2);color:var(--ink)}
 .stkbody{display:flex;align-items:stretch;gap:10px;min-width:0}
 .stk{display:flex;gap:7px;overflow-x:auto;overflow-y:hidden;padding:2px 3px 4px;min-width:0;scrollbar-width:thin}
-.si{position:relative;flex:0 0 68px}
-.stkpick{width:68px;height:72px;border-radius:15px;background:rgba(118,118,128,.08);padding:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:transform .12s,box-shadow .12s,background .12s}
+.si{position:relative;flex:0 0 58px}
+.stkpick{width:58px;height:58px;border-radius:15px;background:rgba(118,118,128,.08);padding:7px;display:flex;align-items:center;justify-content:center;transition:transform .12s,box-shadow .12s,background .12s}
 .stkpick:hover{background:rgba(118,118,128,.14);transform:translateY(-1px)}
 .stkpick.on{background:#fff;box-shadow:0 0 0 2px var(--accent),0 5px 16px rgba(0,0,0,.08)}
-.stkpick .preview{height:38px;width:54px;display:flex;align-items:center;justify-content:center}.stkpick img{max-width:100%;max-height:100%;object-fit:contain}
-.stkpick .caption{display:block;max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10.5px;color:var(--ink2)}
+.stkpick .preview{height:44px;width:44px;display:flex;align-items:center;justify-content:center}.stkpick img{max-width:100%;max-height:100%;object-fit:contain}
 .si .rmx{position:absolute;right:-3px;top:-3px;width:17px;height:17px;border-radius:50%;background:#fff;box-shadow:0 1px 5px rgba(0,0,0,.22);font-size:9px;line-height:1;padding:0;color:var(--muted)}
 .si .rmx:hover{color:var(--danger)}
 .addpic{flex:0 0 92px;border:1px dashed rgba(0,113,227,.32);border-radius:15px;color:var(--accent);font-size:11.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;background:rgba(0,113,227,.04)}
@@ -252,14 +251,14 @@ body.stk-on #toast{bottom:152px}
         <div class="sugbox" id="sug"></div>
       </div>
       <div class="row" style="margin-top:8px"><button class="btn" id="qall" hidden>이 단어가 있는 줄 모두 칠하기</button></div>
-      <p class="hint">↑ ↓ 로 고르고 Enter를 누르면 그 자리로 갑니다. 목록에서 '칠하기'를 누르면 그 줄에 형광펜이 칠해집니다.</p>
+      <p class="hint">해당 항목을 선택하고 Enter를 누르면 그 자리로 갑니다.</p>
     </section>
 
     <section>
       <h3>내 문구</h3>
       <div id="phrases"></div>
       <div class="row" style="margin-top:9px"><input class="inp" id="pnew" placeholder="자주 쓰는 문구 추가 (Enter)"><button class="btn" id="padd">추가</button></div>
-      <p class="hint">형광펜이나 메모를 선택한 뒤 문구를 누르면 들어갑니다. 문구는 서버가 아닌 현재 브라우저에만 저장되어 다른 사람과 섞이지 않습니다.</p>
+      <p class="hint">형광펜이나 메모를 선택한 뒤 문구를 클릭하면 추가됩니다.</p>
     </section>
 
     <section>
@@ -277,6 +276,7 @@ body.stk-on #toast{bottom:152px}
         <h2>가입제안서 PDF를 여기에 끌어다 놓으세요</h2>
         <p>글자를 끌어 형광펜을 칠하고, '언제 받는지' 메모와 스티커를 붙일 수 있습니다.</p>
         <p>파일은 이 PC 밖으로 나가지 않고, 원본은 바뀌지 않습니다.</p>
+
         <label class="btn primary" for="file">PDF 열기</label>
       </div>
     </div>
@@ -685,11 +685,6 @@ function memoForHl(h, text) {
 }
 
 /* ───────── 스티커 ───────── */
-function drawLabel(c, w, h, text, ink, fill) {
-  c.fillStyle = fill; roundRect(c, 2, 2, w - 4, h - 4, h * .42); c.fill();
-  c.strokeStyle = ink; c.lineWidth = Math.max(2, h * .055); roundRect(c, 3, 3, w - 6, h - 6, h * .38); c.stroke();
-  c.fillStyle = ink; c.font = '700 ' + h * .40 + 'px ' + FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(text, w / 2, h * .52); c.textAlign = 'left';
-}
 function drawArrow(c, w, h, dir) {
   c.strokeStyle = '#C95757'; c.fillStyle = '#C95757'; c.lineWidth = Math.max(3, Math.min(w, h) * .15); c.lineCap = 'round'; c.lineJoin = 'round';
   if (dir === 'right' || dir === 'left') {
@@ -705,22 +700,28 @@ function drawArrow(c, w, h, dir) {
 function drawPencilStar(c, w, h) {
   const pts = [], cx = w / 2, cy = h / 2, outer = Math.min(w, h) * .43, inner = outer * .43;
   for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? inner : outer; pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); }
-  const cols = ['#E45454','#E99A2F','#3F9A63','#3F72B8','#8D5AA8'];
   c.lineJoin = 'round'; c.lineCap = 'round';
-  for (let i = 0; i < pts.length; i++) {
-    const a = pts[i], b = pts[(i + 1) % pts.length], col = cols[i % cols.length];
-    c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.strokeStyle = col; c.globalAlpha = .94; c.lineWidth = Math.max(3, outer * .10); c.stroke();
-    c.beginPath(); c.moveTo(a[0] + 1.4, a[1] - .8); c.lineTo(b[0] + 1.4, b[1] - .8); c.globalAlpha = .38; c.lineWidth = Math.max(1.3, outer * .035); c.stroke();
+  const passes = [[0, 0, 1], [1.4, -.9, .46], [-1.1, .7, .28]];
+  for (const [dx, dy, alpha] of passes) {
+    c.beginPath(); c.moveTo(pts[0][0] + dx, pts[0][1] + dy);
+    for (let i = 1; i <= pts.length; i++) { const p = pts[i % pts.length]; c.lineTo(p[0] + dx, p[1] + dy); }
+    c.strokeStyle = '#E33135'; c.globalAlpha = alpha; c.lineWidth = Math.max(1.4, outer * (alpha === 1 ? .105 : .045)); c.stroke();
+  }
+  c.globalAlpha = 1;
+}
+function drawPencilCheck(c, w, h) {
+  const p = [[w * .16, h * .53], [w * .40, h * .77], [w * .84, h * .22]];
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  const passes = [[0, 0, 1], [1.2, -.8, .42], [-.9, .8, .25]];
+  for (const [dx, dy, alpha] of passes) {
+    c.beginPath(); c.moveTo(p[0][0] + dx, p[0][1] + dy); c.lineTo(p[1][0] + dx, p[1][1] + dy); c.lineTo(p[2][0] + dx, p[2][1] + dy);
+    c.strokeStyle = '#E33135'; c.globalAlpha = alpha; c.lineWidth = Math.max(1.5, Math.min(w, h) * (alpha === 1 ? .095 : .04)); c.stroke();
   }
   c.globalAlpha = 1;
 }
 const BUILTIN = [
-  { k: 'confirm', n: '확인', r: .42, w: 62, draw(c, w, h) { drawLabel(c, w, h, '확인', '#1677D2', 'rgba(235,245,255,.94)'); } },
-  { k: 'important', n: '중요', r: .42, w: 62, draw(c, w, h) { drawLabel(c, w, h, '중요', '#C43E4F', 'rgba(255,238,241,.94)'); } },
-  { k: 'recommend', n: '추천', r: .42, w: 62, draw(c, w, h) { drawLabel(c, w, h, '추천', '#27805E', 'rgba(234,249,241,.94)'); } },
-  { k: 'caution', n: '주의', r: .42, w: 62, draw(c, w, h) { drawLabel(c, w, h, '주의', '#A96800', 'rgba(255,247,225,.96)'); } },
-  { k: 'check', n: '체크', r: 1, w: 34, draw(c, w, h) { const s = Math.min(w, h); c.fillStyle = '#1677D2'; c.beginPath(); c.arc(w / 2, h / 2, s * .42, 0, Math.PI * 2); c.fill(); c.strokeStyle = '#fff'; c.lineWidth = s * .10; c.lineCap = 'round'; c.lineJoin = 'round'; c.beginPath(); c.moveTo(w * .28, h * .51); c.lineTo(w * .44, h * .67); c.lineTo(w * .73, h * .35); c.stroke(); } },
-  { k: 'star', n: '색연필 별', r: 1, w: 38, draw(c, w, h) { drawPencilStar(c, w, h); } },
+  { k: 'check', n: '체크', r: 1, w: 36, draw(c, w, h) { drawPencilCheck(c, w, h); } },
+  { k: 'star', n: '별', r: 1, w: 40, draw(c, w, h) { drawPencilStar(c, w, h); } },
   { k: 'arrow-right', n: '→', r: .42, w: 58, draw(c, w, h) { drawArrow(c, w, h, 'right'); } },
   { k: 'arrow-left', n: '←', r: .42, w: 58, draw(c, w, h) { drawArrow(c, w, h, 'left'); } },
   { k: 'arrow-up', n: '↑', r: 2.35, w: 25, draw(c, w, h) { drawArrow(c, w, h, 'up'); } },
@@ -794,7 +795,7 @@ function renderStickers() {
   const host = $('#stk'); host.innerHTML = '';
   const mk = (src, title, removable) => {
     const w = document.createElement('div'); w.className = 'si';
-    w.innerHTML = '<button class="stkpick" title="' + esc(title) + '"><span class="preview"><img alt="" src="' + stickerUrl(src) + '"></span><span class="caption">' + esc(title) + '</span></button>' + (removable ? '<button class="rmx" title="내 이미지에서 제거">✕</button>' : '');
+    w.innerHTML = '<button class="stkpick" aria-label="' + esc(title) + '"><span class="preview"><img alt="" src="' + stickerUrl(src) + '"></span></button>' + (removable ? '<button class="rmx" title="내 이미지에서 제거">✕</button>' : '');
     const b = w.querySelector('.stkpick');
     b.classList.toggle('on', S.stkSel === src);
     b.addEventListener('click', () => {
