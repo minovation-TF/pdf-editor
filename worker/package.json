@@ -1,0 +1,10 @@
+{
+  "name": "pdf-editor-counter-worker",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.40.3"
+  }
+}

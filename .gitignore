@@ -3,3 +3,4 @@ output/
 *.pdf
 *.jpg
 *.jpeg
+worker/node_modules/

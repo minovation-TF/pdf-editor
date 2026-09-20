@@ -1,11 +1,11 @@
-name = "meritz-pdf-editor-counter"
+name = "pdf-editor-counter"
 main = "src/index.js"
 compatibility_date = "2026-09-20"
 
 [vars]
-ALLOWED_ORIGIN = "*"
+ALLOWED_ORIGIN = "https://minovation-tf.github.io"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "meritz-pdf-editor-counter"
-database_id = "여기에_D1_DATABASE_ID_입력"
+database_name = "pdf-editor-visits"
+database_id = "a7db8dbd-dd10-4413-ba26-730fe880a43c"

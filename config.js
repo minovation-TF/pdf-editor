@@ -3,6 +3,6 @@
  * Cloudflare 배포 후 발급된 주소와 Web Analytics 토큰만 입력합니다.
  */
 window.PDF_EDITOR_CONFIG = {
-  counterEndpoint: '',
-  cloudflareBeaconToken: '',
+  counterEndpoint: 'https://pdf-editor-counter.espresso311.workers.dev',
+  cloudflareBeaconToken: 'd7499ff126cc4f4789c18b345ee15eb8',
 };
