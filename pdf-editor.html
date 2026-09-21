@@ -19,6 +19,35 @@ if (/MSIE |Trident\//.test(navigator.userAgent)) {
   --shadow:0 2px 6px rgba(0,0,0,.05),0 14px 34px rgba(0,0,0,.08);
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Apple SD Gothic Neo","Pretendard","Malgun Gothic","맑은 고딕","Noto Sans KR",sans-serif;
 }
+/* 사용자가 제공한 메모 전용 글꼴: 출력본에서도 같은 글꼴을 사용합니다. */
+@font-face{font-family:'NanumSinHonBuBu';src:url("assets/fonts/NanumSinHonBuBu.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'NanumYeoReumGeurSsi';src:url("assets/fonts/NanumYeoReumGeurSsi.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'NanumJaBuSimJiU';src:url("assets/fonts/NanumJaBuSimJiU.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'NanumWaIrDeu';src:url("assets/fonts/NanumWaIrDeu.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'MaruBuri';src:url("assets/fonts/MaruBuri-Regular.otf") format('opentype');font-weight:400;font-display:swap}
+@font-face{font-family:'MaruBuri';src:url("assets/fonts/MaruBuri-SemiBold.otf") format('opentype');font-weight:600;font-display:swap}
+@font-face{font-family:'MaruBuri';src:url("assets/fonts/MaruBuri-Bold.otf") format('opentype');font-weight:700;font-display:swap}
+@font-face{font-family:'InsungitCutelivelyJisu';src:url("assets/fonts/insungit Cutelively jisu Regular.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'OngeulipPositive';src:url("assets/fonts/온글잎 긍정.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'OngeulipRadioPen';src:url("assets/fonts/온글잎 레디오 볼펜체.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'OngeulipParkDahyeon';src:url("assets/fonts/온글잎 박다현체.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'OngeulipSeonsiu';src:url("assets/fonts/온글잎 선시우체.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'OngeulipYuntaeng';src:url("assets/fonts/온글잎 윤탱체.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'OngeulipJaegunsa';src:url("assets/fonts/온글잎 재건사.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'NanumGomSinCe';src:url("assets/fonts/NanumGomSinCe.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'NanumGoDigANiGoGoDing';src:url("assets/fonts/NanumGoDigANiGoGoDing.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'NanumGeumEunBoHwa';src:url("assets/fonts/NanumGeumEunBoHwa.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'NanumGiBbeumBarkEum';src:url("assets/fonts/NanumGiBbeumBarkEum.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'NanumGimYuICe';src:url("assets/fonts/NanumGimYuICe.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'NanumNaEuiANaeSonGeurSsi';src:url("assets/fonts/NanumNaEuiANaeSonGeurSsi.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'NanumDaSiSiJagHae';src:url("assets/fonts/NanumDaSiSiJagHae.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'NanumDaHaengCe';src:url("assets/fonts/NanumDaHaengCe.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'NanumDaeGwangYuRi';src:url("assets/fonts/NanumDaeGwangYuRi.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'NanumDdarEGeEomMaGa';src:url("assets/fonts/NanumDdarEGeEomMaGa.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'NanumMuGungHwa';src:url("assets/fonts/NanumMuGungHwa.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'NanumMasIssNeunCe';src:url("assets/fonts/NanumMasIssNeunCe.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'NanumBuJangNimNunCiCe';src:url("assets/fonts/NanumBuJangNimNunCiCe.ttf") format('truetype');font-display:swap}
+@font-face{font-family:'NanumABbaEuiYeonAePyeonJi';src:url("assets/fonts/NanumABbaEuiYeonAePyeonJi.ttf") format('truetype');font-display:swap}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{font-family:var(--font);color:var(--ink);background:var(--bg);font-size:13px;-webkit-font-smoothing:antialiased;letter-spacing:-.012em}
@@ -160,7 +189,7 @@ svg.lines{position:absolute;inset:0;pointer-events:none;overflow:visible}
 .memo-tools .tc.on{box-shadow:0 0 0 2px #fff,0 0 0 3px var(--accent)}
 .memo-tools .mc{min-width:17px;width:17px;height:17px;padding:0;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.16)}
 .memo-tools .mc.on{box-shadow:0 0 0 2px #fff,0 0 0 3px var(--accent)}
-.memo-tools select{height:24px;max-width:104px;border:1px solid var(--line2);border-radius:7px;background:#fff;padding:0 18px 0 7px;font-size:10.5px;outline:none}
+.memo-tools select{height:24px;width:156px;max-width:156px;border:1px solid var(--line2);border-radius:7px;background:#fff;padding:0 18px 0 7px;font-size:10.5px;outline:none}
 .memo-tools .tool-sep{width:1px;height:17px;background:var(--line2);margin:0 2px}
 .sticker{position:absolute;cursor:move;border-radius:8px}
 .sticker img{width:100%;height:100%;display:block;pointer-events:none;-webkit-user-drag:none}
@@ -383,11 +412,37 @@ const COLORS = [
 const MEMO_TEXT_COLORS = ['#111111', '#E03131', '#1971C2', '#2F9E44'];
 const MEMO_TEXT_COLOR_NAMES = ['검정', '빨강', '파랑', '초록'];
 const MEMO_FONTS = [
-  { name: '맑은 고딕', value: 'Malgun Gothic' },
-  { name: 'Pretendard', value: 'Pretendard' },
-  { name: 'Arial', value: 'Arial' },
-  { name: 'Georgia', value: 'Georgia' },
-  { name: 'Courier New', value: 'Courier New' },
+  { name: '맑은 고딕 · 가나다 ABC', value: 'Malgun Gothic' },
+  { name: '프리텐다드 · 가나다 ABC', value: 'Pretendard' },
+  { name: '나눔신혼부부 · 가나다 ABC', value: 'NanumSinHonBuBu' },
+  { name: '나눔여름글씨 · 가나다 ABC', value: 'NanumYeoReumGeurSsi' },
+  { name: '나눔자부심지우 · 가나다 ABC', value: 'NanumJaBuSimJiU' },
+  { name: '나눔와일드 · 가나다 ABC', value: 'NanumWaIrDeu' },
+  { name: '마루부리 · 가나다 ABC', value: 'MaruBuri' },
+  { name: '인성잇 큐틀리블리 지수 · 가나다 ABC', value: 'InsungitCutelivelyJisu' },
+  { name: '온글잎 긍정 · 가나다 ABC', value: 'OngeulipPositive' },
+  { name: '온글잎 레디오 볼펜체 · 가나다 ABC', value: 'OngeulipRadioPen' },
+  { name: '온글잎 박다현체 · 가나다 ABC', value: 'OngeulipParkDahyeon' },
+  { name: '온글잎 선시우체 · 가나다 ABC', value: 'OngeulipSeonsiu' },
+  { name: '온글잎 윤탱체 · 가나다 ABC', value: 'OngeulipYuntaeng' },
+  { name: '온글잎 재건사 · 가나다 ABC', value: 'OngeulipJaegunsa' },
+  { name: '나눔곰신체 · 가나다 ABC', value: 'NanumGomSinCe' },
+  { name: '나눔고딕 아니고 고딩 · 가나다 ABC', value: 'NanumGoDigANiGoGoDing' },
+  { name: '나눔금은보화 · 가나다 ABC', value: 'NanumGeumEunBoHwa' },
+  { name: '나눔기쁨밝음 · 가나다 ABC', value: 'NanumGiBbeumBarkEum' },
+  { name: '나눔김유이체 · 가나다 ABC', value: 'NanumGimYuICe' },
+  { name: '나눔나의아내손글씨 · 가나다 ABC', value: 'NanumNaEuiANaeSonGeurSsi' },
+  { name: '나눔다시시작해 · 가나다 ABC', value: 'NanumDaSiSiJagHae' },
+  { name: '나눔다행체 · 가나다 ABC', value: 'NanumDaHaengCe' },
+  { name: '나눔대광유리 · 가나다 ABC', value: 'NanumDaeGwangYuRi' },
+  { name: '나눔딸에게엄마가 · 가나다 ABC', value: 'NanumDdarEGeEomMaGa' },
+  { name: '나눔무궁화 · 가나다 ABC', value: 'NanumMuGungHwa' },
+  { name: '나눔맛있는체 · 가나다 ABC', value: 'NanumMasIssNeunCe' },
+  { name: '나눔부장님눈치체 · 가나다 ABC', value: 'NanumBuJangNimNunCiCe' },
+  { name: '나눔아빠의연애편지 · 가나다 ABC', value: 'NanumABbaEuiYeonAePyeonJi' },
+  { name: 'Arial · 가나다 ABC', value: 'Arial' },
+  { name: 'Georgia · 가나다 ABC', value: 'Georgia' },
+  { name: 'Courier New · 가나다 ABC', value: 'Courier New' },
 ];
 const PHRASES = [];   // 처음 배포할 때 넣어둘 문구가 있으면 여기에 (예: ['진단 확정되면 1회 지급'])
 const STK_IMG_W = 58;        // 내 이미지 기본 폭 (pt) — 붙인 뒤 모서리로 조절
@@ -961,12 +1016,14 @@ function renderAnn() {
         Object.assign(tools.style, { left: a.x * k + 'px', top: a.y * k + 'px' });
         tools.innerHTML = '<button data-act="bold" class="' + (a.bold ? 'on' : '') + '" title="굵게"><b>B</b></button>' +
           '<button data-act="smaller" title="글자 작게">A−</button><button data-act="larger" title="글자 크게">A＋</button>' +
-          '<select data-act="font" aria-label="폰트 선택"><option value="">기본 폰트</option>' + MEMO_FONTS.map((f) => '<option value="' + esc(f.value) + '"' + (a.font === f.value ? ' selected' : '') + '>' + esc(f.name) + '</option>').join('') + '</select>' +
+          '<select data-act="font" aria-label="폰트 선택"><option value="">기본 폰트 · 가나다 ABC</option>' + MEMO_FONTS.map((f) => '<option value="' + esc(f.value) + '" style="font-family:' + esc(f.value) + ';"' + (a.font === f.value ? ' selected' : '') + '>' + esc(f.name) + '</option>').join('') + '</select>' +
           '<span class="tool-sep"></span>' +
           MEMO_TEXT_COLORS.map((col, i) => '<button class="tc' + (a.textColor === col ? ' on' : '') + '" data-color="' + col + '" style="background:' + col + '" title="글자색 ' + MEMO_TEXT_COLOR_NAMES[i] + '"></button>').join('') +
           '<span class="tool-sep"></span>' +
           COLORS.map((col, i) => '<button class="mc' + (a.color === i ? ' on' : '') + '" data-bg="' + i + '" style="background:' + (col.paper || col.hex) + '" title="메모 배경 ' + col.name + '"></button>').join('') +
           '<button data-act="del" title="메모 삭제">삭제</button>';
+        const fontSelect = tools.querySelector('select[data-act="font"]');
+        if (fontSelect) fontSelect.style.fontFamily = a.font ? '"' + a.font + '",' + FONT : FONT;
         tools.addEventListener('pointerdown', (e) => e.stopPropagation());
         tools.addEventListener('click', (e) => {
           const b = e.target.closest('button'); const selectEl = e.target.closest('select'); if (selectEl) return; if (!b) return;
