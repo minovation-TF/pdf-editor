@@ -172,7 +172,7 @@ svg.lines{position:absolute;inset:0;pointer-events:none;overflow:visible}
 .hl.mark-underline,.hl.mark-squiggle{mix-blend-mode:normal;opacity:1;background:transparent!important;border-radius:0}
 .hl.mark-underline{border-bottom:2px solid var(--mark-color,#e33135)}
 .hl.mark-squiggle svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
-.hl.mark-squiggle path{fill:none;stroke:var(--mark-color,#e33135);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.hl.mark-squiggle path{fill:none;stroke:var(--mark-color,#e33135);stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round}
 .hl.on{outline:2px solid var(--accent);outline-offset:1px;opacity:.56}
 .hl.area-hl{cursor:move}
 .hl .hrz{position:absolute;right:3px;bottom:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 0 0 1.5px var(--accent),0 2px 6px rgba(0,0,0,.16);cursor:nwse-resize;display:none;mix-blend-mode:normal}
@@ -784,7 +784,7 @@ function drawArrow(c, w, h, dir) {
     c.beginPath(); c.moveTo(w * .50, h * tip); c.lineTo(w * .18, h * wing); c.lineTo(w * .82, h * wing); c.closePath(); c.fill();
   }
 }
-function drawPencilStar(c, w, h) {
+function drawPencilStar(c, w, h, color) {
   const pts = [], cx = w / 2, cy = h / 2, outer = Math.min(w, h) * .43, inner = outer * .43;
   for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? inner : outer; pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); }
   c.lineJoin = 'round'; c.lineCap = 'round';
@@ -792,22 +792,22 @@ function drawPencilStar(c, w, h) {
   for (const [dx, dy, alpha] of passes) {
     c.beginPath(); c.moveTo(pts[0][0] + dx, pts[0][1] + dy);
     for (let i = 1; i <= pts.length; i++) { const p = pts[i % pts.length]; c.lineTo(p[0] + dx, p[1] + dy); }
-    c.strokeStyle = '#E33135'; c.globalAlpha = alpha; c.lineWidth = Math.max(1.4, outer * (alpha === 1 ? .105 : .045)); c.stroke();
+    c.strokeStyle = color || '#E33135'; c.globalAlpha = alpha; c.lineWidth = Math.max(1.4, outer * (alpha === 1 ? .105 : .045)); c.stroke();
   }
   c.globalAlpha = 1;
 }
-function drawPencilCheck(c, w, h) {
+function drawPencilCheck(c, w, h, color) {
   const p = [[w * .16, h * .53], [w * .40, h * .77], [w * .84, h * .22]];
   c.lineCap = 'round'; c.lineJoin = 'round';
   const passes = [[0, 0, 1], [1.2, -.8, .42], [-.9, .8, .25]];
   for (const [dx, dy, alpha] of passes) {
     c.beginPath(); c.moveTo(p[0][0] + dx, p[0][1] + dy); c.lineTo(p[1][0] + dx, p[1][1] + dy); c.lineTo(p[2][0] + dx, p[2][1] + dy);
-    c.strokeStyle = '#E33135'; c.globalAlpha = alpha; c.lineWidth = Math.max(1.5, Math.min(w, h) * (alpha === 1 ? .095 : .04)); c.stroke();
+    c.strokeStyle = color || '#E33135'; c.globalAlpha = alpha; c.lineWidth = Math.max(1.5, Math.min(w, h) * (alpha === 1 ? .095 : .04)); c.stroke();
   }
   c.globalAlpha = 1;
 }
-function drawPencilCircle(c, w, h) {
-  c.strokeStyle = '#E33135'; c.lineCap = 'round'; c.lineJoin = 'round';
+function drawPencilCircle(c, w, h, color) {
+  c.strokeStyle = color || '#E33135'; c.lineCap = 'round'; c.lineJoin = 'round';
   const passes = [[0, 0, 1], [1.3, -.8, .42], [-1.1, .7, .26]];
   for (const [dx, dy, alpha] of passes) {
     c.beginPath(); c.ellipse(w * .5 + dx, h * .5 + dy, w * .39, h * .35, -.06, 0, Math.PI * 2);
@@ -815,8 +815,8 @@ function drawPencilCircle(c, w, h) {
   }
   c.globalAlpha = 1;
 }
-function drawPencilX(c, w, h) {
-  c.strokeStyle = '#E33135'; c.lineCap = 'round'; c.lineJoin = 'round';
+function drawPencilX(c, w, h, color) {
+  c.strokeStyle = color || '#E33135'; c.lineCap = 'round'; c.lineJoin = 'round';
   const passes = [[0, 0, 1], [1.1, -.7, .42], [-.9, .8, .24]];
   for (const [dx, dy, alpha] of passes) {
     c.beginPath();
@@ -831,6 +831,13 @@ const BUILTIN = [
   { k: 'star', n: '별', r: 1, w: 40, draw(c, w, h) { drawPencilStar(c, w, h); } },
   { k: 'x', n: '엑스', r: 1, w: 36, draw(c, w, h) { drawPencilX(c, w, h); } },
   { k: 'circle', n: '동그라미', r: 1, w: 52, draw(c, w, h) { drawPencilCircle(c, w, h); } },
+  { k: 'star-blue', n: '별 · 파랑', r: 1, w: 40, draw(c, w, h) { drawPencilStar(c, w, h, '#18A9E8'); } },
+  { k: 'star-black', n: '별 · 검정', r: 1, w: 40, draw(c, w, h) { drawPencilStar(c, w, h, '#111111'); } },
+  { k: 'check-blue', n: '체크 · 파랑', r: 1, w: 36, draw(c, w, h) { drawPencilCheck(c, w, h, '#18A9E8'); } },
+  { k: 'check-black', n: '체크 · 검정', r: 1, w: 36, draw(c, w, h) { drawPencilCheck(c, w, h, '#111111'); } },
+  { k: 'x-blue', n: '엑스 · 파랑', r: 1, w: 36, draw(c, w, h) { drawPencilX(c, w, h, '#18A9E8'); } },
+  { k: 'x-black', n: '엑스 · 검정', r: 1, w: 36, draw(c, w, h) { drawPencilX(c, w, h, '#111111'); } },
+  { k: 'circle-blue', n: '동그라미 · 파랑', r: 1, w: 52, draw(c, w, h) { drawPencilCircle(c, w, h, '#18A9E8'); } },
   { k: 'arrow-right', n: '→', r: .42, w: 58, draw(c, w, h) { drawArrow(c, w, h, 'right'); } },
   { k: 'arrow-left', n: '←', r: .42, w: 58, draw(c, w, h) { drawArrow(c, w, h, 'left'); } },
   { k: 'arrow-up', n: '↑', r: 2.35, w: 25, draw(c, w, h) { drawArrow(c, w, h, 'up'); } },
@@ -973,7 +980,7 @@ function renderAnn() {
       const mark = a.mark || 'highlight';
       d.className = 'hl' + (area ? ' area-hl' : '') + (mark !== 'highlight' ? ' mark-' + mark : '') + (S.sel === a.id ? ' on' : ''); d.dataset.id = a.id;
       Object.assign(d.style, { left: a.x * k + 'px', top: a.y * k + 'px', width: a.w * k + 'px', height: a.h * k + 'px', background: mark === 'highlight' ? c.hex : 'transparent', '--mark-color': a.lineColor || '#e33135' });
-      if (mark === 'squiggle') d.innerHTML = '<svg viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0 12 Q 5 3 10 12 T20 12 T30 12 T40 12 T50 12 T60 12 T70 12 T80 12 T90 12 T100 12"/></svg>';
+      if (mark === 'squiggle') d.innerHTML = '<svg viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0 11 Q 5 8 10 11 T20 11 T30 11 T40 11 T50 11 T60 11 T70 11 T80 11 T90 11 T100 11"/></svg>';
       d.title = a.label || '';
       if (area) d.innerHTML = '<span class="hrz" title="끌어서 크기 조절"></span>';
       P.layer.appendChild(d);
@@ -1490,7 +1497,7 @@ async function buildMarkedPdf() {
         if (a.mark === 'underline') {
           pg.drawLine({ start: { x: r.x, y }, end: { x: r.x + r.w, y }, thickness: 1.5, color: col, opacity: .95 });
         } else {
-          const steps = 12, amp = Math.max(.8, Math.min(2.2, r.h * .16));
+          const steps = 12, amp = Math.max(.45, Math.min(1.15, r.h * .07));
           for (let j = 0; j < steps; j++) {
             const x1 = r.x + r.w * j / steps, x2 = r.x + r.w * (j + 1) / steps;
             const y1 = y + (j % 2 ? amp : -amp), y2 = y + ((j + 1) % 2 ? amp : -amp);
