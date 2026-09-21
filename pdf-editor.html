@@ -805,20 +805,22 @@ function drawPencilCircle(c, w, h) {
   }
   c.globalAlpha = 1;
 }
-function drawPencilUnderline(c, w, h) {
-  c.strokeStyle = '#E33135'; c.lineCap = 'round';
-  const passes = [[0, 0, 1], [1, -.7, .4], [-1, .7, .24]];
+function drawPencilX(c, w, h) {
+  c.strokeStyle = '#E33135'; c.lineCap = 'round'; c.lineJoin = 'round';
+  const passes = [[0, 0, 1], [1.1, -.7, .42], [-.9, .8, .24]];
   for (const [dx, dy, alpha] of passes) {
-    c.beginPath(); c.moveTo(w * .10 + dx, h * .58 + dy); c.quadraticCurveTo(w * .48 + dx, h * .70 + dy, w * .90 + dx, h * .50 + dy);
-    c.globalAlpha = alpha; c.lineWidth = Math.max(1.5, Math.min(w, h) * (alpha === 1 ? .10 : .04)); c.stroke();
+    c.beginPath();
+    c.moveTo(w * .18 + dx, h * .18 + dy); c.lineTo(w * .82 + dx, h * .82 + dy);
+    c.moveTo(w * .82 + dx, h * .18 + dy); c.lineTo(w * .18 + dx, h * .82 + dy);
+    c.globalAlpha = alpha; c.lineWidth = Math.max(1.5, Math.min(w, h) * (alpha === 1 ? .095 : .04)); c.stroke();
   }
   c.globalAlpha = 1;
 }
 const BUILTIN = [
   { k: 'check', n: '체크', r: 1, w: 36, draw(c, w, h) { drawPencilCheck(c, w, h); } },
   { k: 'star', n: '별', r: 1, w: 40, draw(c, w, h) { drawPencilStar(c, w, h); } },
+  { k: 'x', n: '엑스', r: 1, w: 36, draw(c, w, h) { drawPencilX(c, w, h); } },
   { k: 'circle', n: '동그라미', r: 1, w: 52, draw(c, w, h) { drawPencilCircle(c, w, h); } },
-  { k: 'underline', n: '밑줄', r: .28, w: 58, draw(c, w, h) { drawPencilUnderline(c, w, h); } },
   { k: 'arrow-right', n: '→', r: .42, w: 58, draw(c, w, h) { drawArrow(c, w, h, 'right'); } },
   { k: 'arrow-left', n: '←', r: .42, w: 58, draw(c, w, h) { drawArrow(c, w, h, 'left'); } },
   { k: 'arrow-up', n: '↑', r: 2.35, w: 25, draw(c, w, h) { drawArrow(c, w, h, 'up'); } },
