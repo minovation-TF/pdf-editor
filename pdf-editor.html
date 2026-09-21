@@ -158,6 +158,10 @@ svg.lines{position:absolute;inset:0;pointer-events:none;overflow:visible}
 .memo-tools button:hover,.memo-tools button.on{background:var(--fill);color:var(--accent)}
 .memo-tools .tc{min-width:17px;width:17px;height:17px;padding:0;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
 .memo-tools .tc.on{box-shadow:0 0 0 2px #fff,0 0 0 3px var(--accent)}
+.memo-tools .mc{min-width:17px;width:17px;height:17px;padding:0;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.16)}
+.memo-tools .mc.on{box-shadow:0 0 0 2px #fff,0 0 0 3px var(--accent)}
+.memo-tools select{height:24px;max-width:104px;border:1px solid var(--line2);border-radius:7px;background:#fff;padding:0 18px 0 7px;font-size:10.5px;outline:none}
+.memo-tools .tool-sep{width:1px;height:17px;background:var(--line2);margin:0 2px}
 .sticker{position:absolute;cursor:move;border-radius:8px}
 .sticker img{width:100%;height:100%;display:block;pointer-events:none;-webkit-user-drag:none}
 .sticker.on{outline:1.5px solid var(--accent);outline-offset:4px}
@@ -235,6 +239,7 @@ body.stk-on #toast{bottom:152px}
     <button class="btn ghost" id="zpage">쪽 맞춤</button>
   </div>
   <button class="btn ghost" id="undo" title="되돌리기 (Ctrl+Z)" disabled>되돌리기</button>
+  <button class="btn ghost" id="redo" title="되살리기 (Ctrl+Y)" disabled>되살리기</button>
   <span class="spacer"></span>
   <span id="visitstat" aria-live="polite" title="같은 브라우저에서는 하루 한 번 집계됩니다"></span>
   <div class="savegrp">
@@ -377,6 +382,13 @@ const COLORS = [
 ];
 const MEMO_TEXT_COLORS = ['#111111', '#E03131', '#1971C2', '#2F9E44'];
 const MEMO_TEXT_COLOR_NAMES = ['검정', '빨강', '파랑', '초록'];
+const MEMO_FONTS = [
+  { name: '맑은 고딕', value: 'Malgun Gothic' },
+  { name: 'Pretendard', value: 'Pretendard' },
+  { name: 'Arial', value: 'Arial' },
+  { name: 'Georgia', value: 'Georgia' },
+  { name: 'Courier New', value: 'Courier New' },
+];
 const PHRASES = [];   // 처음 배포할 때 넣어둘 문구가 있으면 여기에 (예: ['진단 확정되면 1회 지급'])
 const STK_IMG_W = 58;        // 내 이미지 기본 폭 (pt) — 붙인 뒤 모서리로 조절
 const MEMO_W = 150;          // 메모 상자 폭 (pt)
@@ -408,7 +420,7 @@ class NoStdFontFactory {                        // 표준 글꼴 파일은 넣�
 
 const S = {
   doc: null, bytes: null, name: '', pages: [], scale: 1, tool: 'hl', color: 0,
-  ann: [], sel: null, undo: [], dirty: false, seq: 1, results: [],
+  ann: [], sel: null, undo: [], redo: [], dirty: false, seq: 1, results: [],
   imgs: [], stkSel: null,          // imgs : 사용자가 올린 스티커 그림
 };
 let phrases = PHRASES.slice();
@@ -467,6 +479,7 @@ $('#zout').addEventListener('click', () => setScale(S.scale / 1.15));
 $('#zfit').addEventListener('click', () => setScale(fitWidth()));
 $('#zpage').addEventListener('click', () => setScale(fitPage()));
 $('#undo').addEventListener('click', undo);
+$('#redo').addEventListener('click', redo);
 function selectedFormat() { return (document.querySelector('input[name="fmt"]:checked') || {}).value || 'pdf'; }
 function updateFormatUI() {
   const jpg = selectedFormat() === 'jpg';
@@ -645,11 +658,16 @@ async function drawPage(P) {
 
 /* ───────── 표시(형광펜·메모) 상태 ───────── */
 function snapshot() { return JSON.stringify(S.ann); }
-function pushUndo() { S.undo.push(snapshot()); if (S.undo.length > 80) S.undo.shift(); refreshUndo(); }
-function refreshUndo() { $('#undo').disabled = !S.undo.length; }
+function pushUndo() { S.undo.push(snapshot()); S.redo = []; if (S.undo.length > 80) S.undo.shift(); refreshUndo(); }
+function refreshUndo() { $('#undo').disabled = !S.undo.length; $('#redo').disabled = !S.redo.length; }
 function undo() {
   if (!S.undo.length) return;
-  S.ann = JSON.parse(S.undo.pop()); S.sel = null; S.dirty = true;
+  S.redo.push(snapshot()); S.ann = JSON.parse(S.undo.pop()); S.sel = null; S.dirty = true;
+  refreshUndo(); renderAnn(); renderList();
+}
+function redo() {
+  if (!S.redo.length) return;
+  S.undo.push(snapshot()); S.ann = JSON.parse(S.redo.pop()); S.sel = null; S.dirty = true;
   refreshUndo(); renderAnn(); renderList();
 }
 function changed() { S.dirty = true; renderAnn(); renderList(); }
@@ -723,9 +741,29 @@ function drawPencilCheck(c, w, h) {
   }
   c.globalAlpha = 1;
 }
+function drawPencilCircle(c, w, h) {
+  c.strokeStyle = '#E33135'; c.lineCap = 'round'; c.lineJoin = 'round';
+  const passes = [[0, 0, 1], [1.3, -.8, .42], [-1.1, .7, .26]];
+  for (const [dx, dy, alpha] of passes) {
+    c.beginPath(); c.ellipse(w * .5 + dx, h * .5 + dy, w * .39, h * .35, -.06, 0, Math.PI * 2);
+    c.globalAlpha = alpha; c.lineWidth = Math.max(1.5, Math.min(w, h) * (alpha === 1 ? .08 : .035)); c.stroke();
+  }
+  c.globalAlpha = 1;
+}
+function drawPencilUnderline(c, w, h) {
+  c.strokeStyle = '#E33135'; c.lineCap = 'round';
+  const passes = [[0, 0, 1], [1, -.7, .4], [-1, .7, .24]];
+  for (const [dx, dy, alpha] of passes) {
+    c.beginPath(); c.moveTo(w * .10 + dx, h * .58 + dy); c.quadraticCurveTo(w * .48 + dx, h * .70 + dy, w * .90 + dx, h * .50 + dy);
+    c.globalAlpha = alpha; c.lineWidth = Math.max(1.5, Math.min(w, h) * (alpha === 1 ? .10 : .04)); c.stroke();
+  }
+  c.globalAlpha = 1;
+}
 const BUILTIN = [
   { k: 'check', n: '체크', r: 1, w: 36, draw(c, w, h) { drawPencilCheck(c, w, h); } },
   { k: 'star', n: '별', r: 1, w: 40, draw(c, w, h) { drawPencilStar(c, w, h); } },
+  { k: 'circle', n: '동그라미', r: 1, w: 52, draw(c, w, h) { drawPencilCircle(c, w, h); } },
+  { k: 'underline', n: '밑줄', r: .28, w: 58, draw(c, w, h) { drawPencilUnderline(c, w, h); } },
   { k: 'arrow-right', n: '→', r: .42, w: 58, draw(c, w, h) { drawArrow(c, w, h, 'right'); } },
   { k: 'arrow-left', n: '←', r: .42, w: 58, draw(c, w, h) { drawArrow(c, w, h, 'left'); } },
   { k: 'arrow-up', n: '↑', r: 2.35, w: 25, draw(c, w, h) { drawArrow(c, w, h, 'up'); } },
@@ -903,14 +941,14 @@ function renderAnn() {
     } else {
       const m = document.createElement('div');
       m.className = 'memo' + (S.sel === a.id ? ' on' : ''); m.dataset.id = a.id;
-      if (!a.h) a.h = 86; if (!a.fs) a.fs = MEMO_FS; if (!a.textColor) a.textColor = MEMO_TEXT_COLORS[0];
+      if (!a.h) a.h = 86; if (!a.fs) a.fs = MEMO_FS; if (!a.textColor) a.textColor = MEMO_TEXT_COLORS[0]; if (a.font == null) a.font = '';
       const paper = c.paper || c.hex;
       Object.assign(m.style, { left: a.x * k + 'px', top: a.y * k + 'px', width: a.w * k + 'px', height: a.h * k + 'px', background: hexRgba(paper, .64) });
       m.innerHTML = '<div class="dragzone" title="끌어서 메모 이동"><span class="movegrip">✥</span></div>' +
         '<textarea spellcheck="false" placeholder="메모 입력"></textarea><span class="mrz" title="끌어서 크기 조절"></span>';
       const ta = m.querySelector('textarea');
       ta.value = a.text;
-      Object.assign(ta.style, { fontSize: a.fs * k + 'px', lineHeight: a.fs * 1.42 * k + 'px', fontFamily: FONT, fontWeight: a.bold ? '700' : '400', color: a.textColor });
+      Object.assign(ta.style, { fontSize: a.fs * k + 'px', lineHeight: a.fs * 1.42 * k + 'px', fontFamily: a.font ? '"' + a.font + '",' + FONT : FONT, fontWeight: a.bold ? '700' : '400', color: a.textColor });
       P.layer.appendChild(m);
       let pushed = false;
       ta.addEventListener('focus', () => { pushed = false; if (S.sel !== a.id) setTimeout(() => select(a.id, true), 0); });
@@ -923,18 +961,27 @@ function renderAnn() {
         Object.assign(tools.style, { left: a.x * k + 'px', top: a.y * k + 'px' });
         tools.innerHTML = '<button data-act="bold" class="' + (a.bold ? 'on' : '') + '" title="굵게"><b>B</b></button>' +
           '<button data-act="smaller" title="글자 작게">A−</button><button data-act="larger" title="글자 크게">A＋</button>' +
-          MEMO_TEXT_COLORS.map((col, i) => '<button class="tc' + (a.textColor === col ? ' on' : '') + '" data-color="' + col + '" style="background:' + col + '" title="' + MEMO_TEXT_COLOR_NAMES[i] + '"></button>').join('') +
+          '<select data-act="font" aria-label="폰트 선택"><option value="">기본 폰트</option>' + MEMO_FONTS.map((f) => '<option value="' + esc(f.value) + '"' + (a.font === f.value ? ' selected' : '') + '>' + esc(f.name) + '</option>').join('') + '</select>' +
+          '<span class="tool-sep"></span>' +
+          MEMO_TEXT_COLORS.map((col, i) => '<button class="tc' + (a.textColor === col ? ' on' : '') + '" data-color="' + col + '" style="background:' + col + '" title="글자색 ' + MEMO_TEXT_COLOR_NAMES[i] + '"></button>').join('') +
+          '<span class="tool-sep"></span>' +
+          COLORS.map((col, i) => '<button class="mc' + (a.color === i ? ' on' : '') + '" data-bg="' + i + '" style="background:' + (col.paper || col.hex) + '" title="메모 배경 ' + col.name + '"></button>').join('') +
           '<button data-act="del" title="메모 삭제">삭제</button>';
         tools.addEventListener('pointerdown', (e) => e.stopPropagation());
         tools.addEventListener('click', (e) => {
-          const b = e.target.closest('button'); if (!b) return;
+          const b = e.target.closest('button'); const selectEl = e.target.closest('select'); if (selectEl) return; if (!b) return;
           pushUndo();
           if (b.dataset.act === 'bold') a.bold = !a.bold;
           else if (b.dataset.act === 'smaller') a.fs = Math.max(7, (a.fs || MEMO_FS) - 1);
           else if (b.dataset.act === 'larger') a.fs = Math.min(16, (a.fs || MEMO_FS) + 1);
           else if (b.dataset.act === 'del') { delAnn(a.id); return; }
+          else if (b.dataset.bg !== undefined) a.color = +b.dataset.bg;
           else if (b.dataset.color) a.textColor = b.dataset.color;
           changed(); select(a.id, true);
+        });
+        tools.addEventListener('change', (e) => {
+          if (e.target.dataset.act !== 'font') return;
+          pushUndo(); a.font = e.target.value; changed(); select(a.id, true);
         });
         P.layer.appendChild(tools);
         const maxLeft = Math.max(4, P.w * k - tools.offsetWidth - 4);
@@ -1146,6 +1193,7 @@ document.addEventListener('scroll', hideSelPop, true);
 document.addEventListener('keydown', (e) => {
   const typing = /^(INPUT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName);
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !typing) { e.preventDefault(); undo(); return; }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y' && !typing) { e.preventDefault(); redo(); return; }
   if (typing) { if (e.key === 'Escape') document.activeElement.blur(); return; }
   if (e.key === 'Delete' || e.key === 'Backspace') { if (S.sel) { e.preventDefault(); delAnn(S.sel); } }
   else if (e.key === 'Escape') { S.sel = null; renderAnn(); renderList(); }
@@ -1335,13 +1383,14 @@ function memoImage(m) {
   const K = 4, pad = 9, fs = m.fs || MEMO_FS, lh = fs * 1.42, hpt = m.h || 86;
   const c = COLORS[m.color] || COLORS[0];
   const cv = document.createElement('canvas'); const ctx = cv.getContext('2d');
-  ctx.font = (m.bold ? '700 ' : '400 ') + fs * K + 'px ' + FONT;
+  const memoFont = m.font ? '"' + m.font + '",' + FONT : FONT;
+  ctx.font = (m.bold ? '700 ' : '400 ') + fs * K + 'px ' + memoFont;
   const lines = wrap(ctx, m.text || '', (m.w - pad * 2) * K);
   cv.width = Math.ceil(m.w * K); cv.height = Math.ceil(hpt * K);
   ctx.fillStyle = hexRgba(c.paper || c.hex, .68); roundRect(ctx, 1, 1, cv.width - 2, cv.height - 2, 3 * K); ctx.fill();
   ctx.strokeStyle = 'rgba(60,60,67,.18)'; ctx.lineWidth = .75 * K; roundRect(ctx, 1.5 * K, 1.5 * K, cv.width - 3 * K, cv.height - 3 * K, 3 * K); ctx.stroke();
   const top = 7;
-  ctx.fillStyle = m.textColor || MEMO_TEXT_COLORS[0]; ctx.font = (m.bold ? '700 ' : '400 ') + fs * K + 'px ' + FONT; ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = m.textColor || MEMO_TEXT_COLORS[0]; ctx.font = (m.bold ? '700 ' : '400 ') + fs * K + 'px ' + memoFont; ctx.textBaseline = 'alphabetic';
   const maxLines = Math.max(1, Math.floor((hpt - top - 6) / lh));
   lines.slice(0, maxLines).forEach((ln, i) => ctx.fillText(ln, pad * K, (top + lh * (i + 1) - 3) * K));
   return { png: canvasPng(cv), h: hpt };
