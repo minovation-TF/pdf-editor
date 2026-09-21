@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: 2026-09-22-0833f5b-wave2 -->
+<!-- build: 2026-09-22-below-text-underline -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -170,9 +170,8 @@ textarea.inp{resize:vertical;min-height:58px;line-height:1.5}
 svg.lines{position:absolute;inset:0;pointer-events:none;overflow:visible}
 .hl{position:absolute;mix-blend-mode:multiply;opacity:.43;border-radius:4px;cursor:pointer}
 .hl.mark-underline,.hl.mark-squiggle{mix-blend-mode:normal;opacity:1;background:transparent!important;border-radius:0}
-.hl.mark-underline{border-bottom:2px solid var(--mark-color,#e33135)}
-.hl.mark-squiggle svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
-.hl.mark-squiggle path{fill:none;stroke:var(--mark-color,#e33135);stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.hl.mark-underline svg,.hl.mark-squiggle svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.hl.mark-underline path,.hl.mark-squiggle path{fill:none;stroke:var(--mark-color,#e33135);stroke-linecap:round;stroke-linejoin:round}
 .hl.on{outline:2px solid var(--accent);outline-offset:1px;opacity:.56}
 .hl.area-hl{cursor:move}
 .hl .hrz{position:absolute;right:3px;bottom:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 0 0 1.5px var(--accent),0 2px 6px rgba(0,0,0,.16);cursor:nwse-resize;display:none;mix-blend-mode:normal}
@@ -964,6 +963,21 @@ $('#stkfile').addEventListener('change', async (e) => {
 $('#stkclose').addEventListener('click', () => { S.stkSel = null; setTool('sel'); renderStickers(); });
 renderStickers();
 
+/* 화면과 PDF/JPG가 같은 쪽 좌표를 사용한다. 물결의 위쪽까지 글자 영역 아래에 둔다. */
+function textMarkGeometry(a) {
+  const thickness = Math.max(.7, Math.min(1.1, a.h * .06));
+  const wave = a.mark === 'squiggle';
+  const amplitude = wave ? Math.max(.5, Math.min(1, a.h * .065)) : 0;
+  const wavelength = Math.max(4, Math.min(7, a.h * .45));
+  const y = a.h + .3 + thickness / 2 + amplitude;
+  const steps = wave ? Math.max(1, Math.ceil(a.w / wavelength * 12)) : 1;
+  const points = [];
+  for (let i = 0; i <= steps; i++) {
+    const x = a.w * i / steps;
+    points.push([x, y + amplitude * Math.sin(x * 2 * Math.PI / wavelength)]);
+  }
+  return { thickness, points };
+}
 /* 형광펜·메모 그리기 */
 function renderAnn() {
   const k = S.scale;
@@ -979,8 +993,13 @@ function renderAnn() {
       const area = a.kind === 'area';
       const mark = a.mark || 'highlight';
       d.className = 'hl' + (area ? ' area-hl' : '') + (mark !== 'highlight' ? ' mark-' + mark : '') + (S.sel === a.id ? ' on' : ''); d.dataset.id = a.id;
-      Object.assign(d.style, { left: a.x * k + 'px', top: a.y * k + 'px', width: a.w * k + 'px', height: a.h * k + 'px', background: mark === 'highlight' ? c.hex : 'transparent', '--mark-color': a.lineColor || '#e33135' });
-      if (mark === 'squiggle') d.innerHTML = '<svg viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0 17 Q 1.5 14.7 3 17 T6 17 T9 17 T12 17 T15 17 T18 17 T21 17 T24 17 T27 17 T30 17 T33 17 T36 17 T39 17 T42 17 T45 17 T48 17 T51 17 T54 17 T57 17 T60 17 T63 17 T66 17 T69 17 T72 17 T75 17 T78 17 T81 17 T84 17 T87 17 T90 17 T93 17 T96 17 T99 17"/></svg>';
+      Object.assign(d.style, { left: a.x * k + 'px', top: a.y * k + 'px', width: a.w * k + 'px', height: a.h * k + 'px', background: mark === 'highlight' ? c.hex : 'transparent' });
+      d.style.setProperty('--mark-color', a.lineColor || '#e33135');
+      if (mark === 'underline' || mark === 'squiggle') {
+        const g = textMarkGeometry(a);
+        const path = g.points.map(([x, y], i) => (i ? 'L' : 'M') + x + ' ' + y).join(' ');
+        d.innerHTML = '<svg viewBox="0 0 ' + a.w + ' ' + a.h + '" preserveAspectRatio="none" aria-hidden="true"><path stroke-width="' + g.thickness + '" d="' + path + '"/></svg>';
+      }
       d.title = a.label || '';
       if (area) d.innerHTML = '<span class="hrz" title="끌어서 크기 조절"></span>';
       P.layer.appendChild(d);
@@ -1492,18 +1511,16 @@ async function buildMarkedPdf() {
       if (a.type !== 'hl') continue;
       const P = S.pages[a.page - 1], pg = pages[a.page - 1], r = pdfRect(P, a);
       if (a.mark === 'underline' || a.mark === 'squiggle') {
-        const col = hexRgb(a.lineColor || '#e33135');
-        const y = r.y + Math.max(1, r.h * .12);
-        if (a.mark === 'underline') {
-          pg.drawLine({ start: { x: r.x, y }, end: { x: r.x + r.w, y }, thickness: 1.5, color: col, opacity: .95 });
-        } else {
-          const steps = 12, amp = Math.max(.45, Math.min(1.15, r.h * .07));
-          for (let j = 0; j < steps; j++) {
-            const x1 = r.x + r.w * j / steps, x2 = r.x + r.w * (j + 1) / steps;
-            const y1 = y + (j % 2 ? amp : -amp), y2 = y + ((j + 1) % 2 ? amp : -amp);
-            pg.drawLine({ start: { x: x1, y: y1 }, end: { x: x2, y: y2 }, thickness: 1.35, color: col, opacity: .95 });
-          }
-        }
+        const g = textMarkGeometry(a);
+        const { pushGraphicsState, popGraphicsState, setStrokingColor, setLineWidth, setLineCap, setLineJoin, moveTo, lineTo, stroke } = PDFLib;
+        // 각 점을 변환해 회전하거나 잘라낸 PDF에서도 화면과 같은 위치에 저장한다.
+        const points = g.points.map(([x, y]) => P.vp1.convertToPdfPoint(a.x + x, a.y + y));
+        pg.pushOperators(
+          pushGraphicsState(), setStrokingColor(hexRgb(a.lineColor || '#e33135')),
+          setLineWidth(g.thickness), setLineCap(1), setLineJoin(1),
+          ...points.map(([x, y], i) => i ? lineTo(x, y) : moveTo(x, y)),
+          stroke(), popGraphicsState()
+        );
       } else {
         pg.drawRectangle({ x: r.x, y: r.y, width: r.w, height: r.h, color: hexRgb((COLORS[a.color] || COLORS[0]).hex), opacity: 0.43, blendMode: BlendMode.Multiply });
       }
