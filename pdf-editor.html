@@ -70,8 +70,7 @@ header{display:flex;align-items:center;gap:10px;padding:10px 18px;flex-wrap:nowr
 .btn.primary:hover{background:#0077ed;box-shadow:none}
 .btn.ghost{background:transparent;border:1px solid var(--line2)}
 .btn.ghost:hover{background:var(--fill)}
-.history-btn{width:32px;height:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-size:0}
-.history-btn svg{width:17px;height:17px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.history-btn{width:32px;height:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-size:20px;line-height:1;font-family:Arial,sans-serif}
 .history-btn:disabled{opacity:.35}
 .seg{display:inline-flex;background:var(--fill);border-radius:980px;padding:2px;gap:2px}
 .seg button{border-radius:8px;padding:5px 12px;font-size:12.5px;font-weight:500;color:var(--ink2)}
@@ -169,6 +168,10 @@ textarea.inp{resize:vertical;min-height:58px;line-height:1.5}
 .textLayer ::selection{background:rgba(0,113,227,.25)}
 svg.lines{position:absolute;inset:0;pointer-events:none;overflow:visible}
 .hl{position:absolute;mix-blend-mode:multiply;opacity:.43;border-radius:4px;cursor:pointer}
+.hl.mark-underline,.hl.mark-squiggle{mix-blend-mode:normal;opacity:1;background:transparent!important;border-radius:0}
+.hl.mark-underline{border-bottom:2px solid var(--mark-color,#e33135)}
+.hl.mark-squiggle svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.hl.mark-squiggle path{fill:none;stroke:var(--mark-color,#e33135);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .hl.on{outline:2px solid var(--accent);outline-offset:1px;opacity:.56}
 .hl.area-hl{cursor:move}
 .hl .hrz{position:absolute;right:3px;bottom:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 0 0 1.5px var(--accent),0 2px 6px rgba(0,0,0,.16);cursor:nwse-resize;display:none;mix-blend-mode:normal}
@@ -209,6 +212,9 @@ svg.lines{position:absolute;inset:0;pointer-events:none;overflow:visible}
 .ft button:hover{background:var(--fill)}
 .selpop{position:fixed;transform:translate(-50%,-100%)}
 .selpop .lb{font-size:11.5px;color:var(--muted);padding-left:3px}
+.selpop .markbtn{height:22px;min-width:34px;border:1px solid var(--line2);border-radius:6px;background:#fff;color:var(--ink2);font-size:11px;padding:0 6px}
+.selpop .markbtn:hover{border-color:var(--accent);color:var(--accent);background:#f5f9ff}
+.selpop .markcolor{width:18px;height:18px;padding:0;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.16)}
 
 /* 문서용 스티커 선택 패널 */
 #stkbar{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(14px);z-index:25;width:min(92vw,820px);
@@ -270,8 +276,8 @@ body.stk-on #toast{bottom:152px}
     <button class="btn ghost" id="zfit">폭 맞춤</button>
     <button class="btn ghost" id="zpage">쪽 맞춤</button>
   </div>
-  <button class="btn ghost history-btn" id="undo" title="되돌리기 (Ctrl+Z)" aria-label="되돌리기" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7 4 12l5 5"/><path d="M4 12h9a6 6 0 0 1 6 6"/></svg></button>
-  <button class="btn ghost history-btn" id="redo" title="되살리기 (Ctrl+Y)" aria-label="되살리기" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 7 5 5-5 5"/><path d="M20 12h-9a6 6 0 0 0-6 6"/></svg></button>
+  <button class="btn ghost history-btn" id="undo" title="되돌리기 (Ctrl+Z)" aria-label="되돌리기" disabled>↶</button>
+  <button class="btn ghost history-btn" id="redo" title="되살리기 (Ctrl+Y)" aria-label="되살리기" disabled>↷</button>
   <span class="spacer"></span>
   <span id="visitstat" aria-live="polite" title="같은 브라우저에서는 하루 한 번 집계됩니다"></span>
   <div class="savegrp">
@@ -740,10 +746,10 @@ function select(id, focusMemo) {
     if (ta) ta.focus();
   }
 }
-function addHl(P, rc, label, kind) {
-  const dup = S.ann.find((a) => a.type === 'hl' && a.page === P.num && Math.abs(a.x - rc.x) < 2 && Math.abs(a.y - rc.y) < 2 && Math.abs(a.w - rc.w) < 3);
+function addHl(P, rc, label, kind, mark) {
+  const dup = !mark && S.ann.find((a) => a.type === 'hl' && a.page === P.num && Math.abs(a.x - rc.x) < 2 && Math.abs(a.y - rc.y) < 2 && Math.abs(a.w - rc.w) < 3);
   if (dup) return dup;
-  const a = { id: 'a' + S.seq++, type: 'hl', kind: kind || 'text', page: P.num, x: rc.x, y: rc.y, w: rc.w, h: rc.h, color: S.color, label: label || '' };
+  const a = { id: 'a' + S.seq++, type: 'hl', kind: kind || 'text', mark: mark || 'highlight', page: P.num, x: rc.x, y: rc.y, w: rc.w, h: rc.h, color: S.color, label: label || '' };
   S.ann.push(a); return a;
 }
 function addMemo(P, x, y, text, anchor, color) {
@@ -963,8 +969,10 @@ function renderAnn() {
     if (a.type === 'hl') {
       const d = document.createElement('div');
       const area = a.kind === 'area';
-      d.className = 'hl' + (area ? ' area-hl' : '') + (S.sel === a.id ? ' on' : ''); d.dataset.id = a.id;
-      Object.assign(d.style, { left: a.x * k + 'px', top: a.y * k + 'px', width: a.w * k + 'px', height: a.h * k + 'px', background: c.hex });
+      const mark = a.mark || 'highlight';
+      d.className = 'hl' + (area ? ' area-hl' : '') + (mark !== 'highlight' ? ' mark-' + mark : '') + (S.sel === a.id ? ' on' : ''); d.dataset.id = a.id;
+      Object.assign(d.style, { left: a.x * k + 'px', top: a.y * k + 'px', width: a.w * k + 'px', height: a.h * k + 'px', background: mark === 'highlight' ? c.hex : 'transparent', '--mark-color': a.lineColor || '#e33135' });
+      if (mark === 'squiggle') d.innerHTML = '<svg viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0 12 Q 5 3 10 12 T20 12 T30 12 T40 12 T50 12 T60 12 T70 12 T80 12 T90 12 T100 12"/></svg>';
       d.title = a.label || '';
       if (area) d.innerHTML = '<span class="hrz" title="끌어서 크기 조절"></span>';
       P.layer.appendChild(d);
@@ -1205,7 +1213,7 @@ function selPop() {
   if (!el) {
     el = document.createElement('div'); el.id = 'selpop'; el.className = 'selpop'; el.style.display = 'none';
     el.addEventListener('pointerdown', (e) => e.preventDefault());
-    el.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) applyPend(+b.dataset.i); });
+    el.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.i !== undefined) applyPend('highlight', +b.dataset.i); else applyPend(b.dataset.mark, null, b.dataset.color); });
     document.body.appendChild(el);
   }
   return el;
@@ -1230,19 +1238,22 @@ function highlightSelection(P) {
     rects: lines.map((l) => ({ x: (l.left - pr.left) / k - 1, y: (l.top - pr.top) / k - 1, w: (l.right - l.left) / k + 2, h: (l.bottom - l.top) / k + 2 })),
   };
   const last = lines[lines.length - 1], el = selPop();
-  el.innerHTML = '<span class="lb">형광펜</span>' + COLORS.map((c, i) => '<button class="sw' + (i === S.color ? ' on' : '') + '" data-i="' + i + '" title="' + c.name + '" style="background:' + c.hex + '"></button>').join('');
+  el.innerHTML = '<span class="lb">형광펜</span>' + COLORS.map((c, i) => '<button class="sw" data-i="' + i + '" title="' + c.name + ' 형광펜" style="background:' + c.hex + '"></button>').join('') +
+    '<span class="lb">밑줄</span><button class="markbtn" data-mark="underline" data-color="#e33135" title="빨간 직선 밑줄">직선</button><button class="markbtn" data-mark="squiggle" data-color="#e33135" title="빨간 꾸불꾸불 밑줄">물결</button>' +
+    '<button class="markcolor" data-mark="underline" data-color="#e33135" title="빨간 직선 밑줄" style="background:#e33135"></button><button class="markcolor" data-mark="underline" data-color="#1677ff" title="파란 직선 밑줄" style="background:#1677ff"></button>' +
+    '<button class="markcolor" data-mark="squiggle" data-color="#e33135" title="빨간 물결 밑줄" style="background:#e33135"></button><button class="markcolor" data-mark="squiggle" data-color="#1677ff" title="파란 물결 밑줄" style="background:#1677ff"></button>';
   el.style.display = 'flex';
   el.style.left = Math.min(window.innerWidth - 20, Math.max(90, (last.left + last.right) / 2)) + 'px';
   el.style.top = Math.max(46, lines[0].top - 6) + 'px';
   return true;
 }
-function applyPend(ci) {
+function applyPend(mark, ci, lineColor) {
   if (!pend) return;
   const P = S.pages[pend.page - 1]; if (!P) { hideSelPop(); return; }
-  S.color = ci; setColorUI();
+  if (mark === 'highlight') { S.color = ci; setColorUI(); }
   pushUndo();
   let first = null;
-  pend.rects.forEach((rc, i) => { const a = addHl(P, rc, i === 0 ? pend.txt : ''); if (!first) first = a; });
+  pend.rects.forEach((rc, i) => { const a = addHl(P, rc, i === 0 ? pend.txt : '', 'text', mark); if (mark !== 'highlight') a.lineColor = lineColor || '#e33135'; if (!first) first = a; });
   const sel = window.getSelection(); if (sel) sel.removeAllRanges();
   hideSelPop();
   S.dirty = true; renderAnn(); renderList();
@@ -1472,7 +1483,22 @@ async function buildMarkedPdf() {
     for (const a of S.ann) {
       if (a.type !== 'hl') continue;
       const P = S.pages[a.page - 1], pg = pages[a.page - 1], r = pdfRect(P, a);
-      pg.drawRectangle({ x: r.x, y: r.y, width: r.w, height: r.h, color: hexRgb((COLORS[a.color] || COLORS[0]).hex), opacity: 0.43, blendMode: BlendMode.Multiply });
+      if (a.mark === 'underline' || a.mark === 'squiggle') {
+        const col = hexRgb(a.lineColor || '#e33135');
+        const y = r.y + Math.max(1, r.h * .12);
+        if (a.mark === 'underline') {
+          pg.drawLine({ start: { x: r.x, y }, end: { x: r.x + r.w, y }, thickness: 1.5, color: col, opacity: .95 });
+        } else {
+          const steps = 12, amp = Math.max(.8, Math.min(2.2, r.h * .16));
+          for (let j = 0; j < steps; j++) {
+            const x1 = r.x + r.w * j / steps, x2 = r.x + r.w * (j + 1) / steps;
+            const y1 = y + (j % 2 ? amp : -amp), y2 = y + ((j + 1) % 2 ? amp : -amp);
+            pg.drawLine({ start: { x: x1, y: y1 }, end: { x: x2, y: y2 }, thickness: 1.35, color: col, opacity: .95 });
+          }
+        }
+      } else {
+        pg.drawRectangle({ x: r.x, y: r.y, width: r.w, height: r.h, color: hexRgb((COLORS[a.color] || COLORS[0]).hex), opacity: 0.43, blendMode: BlendMode.Multiply });
+      }
     }
     // 2) 스티커
     for (const a of S.ann) {
