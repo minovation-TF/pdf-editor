@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: 2026-09-22-below-text-underline -->
+<!-- build: 2026-09-22-grouped-text-selection -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -156,7 +156,7 @@ textarea.inp{resize:vertical;min-height:58px;line-height:1.5}
 /* 뷰어 */
 #viewer{overflow:auto;position:relative;padding:34px 28px 82px;background:var(--bg)}
 #pages{display:flex;flex-direction:column;align-items:center;gap:22px}
-.page{position:relative;background:#fff;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,.06),0 20px 50px rgba(0,0,0,.10)}
+.page{position:relative;background:#fff;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,.06),0 20px 50px rgba(0,0,0,.10);user-select:none}
 .page canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:4px}
 .page .pno{position:absolute;left:0;top:-19px;font-size:11px;color:var(--muted)}
 .layer{position:absolute;inset:0;pointer-events:none}
@@ -165,8 +165,11 @@ textarea.inp{resize:vertical;min-height:58px;line-height:1.5}
 .page.memo-mode,.page.stk-mode{cursor:copy}
 .textLayer{position:absolute;inset:0;overflow:hidden;line-height:1;transform-origin:0 0;user-select:none;pointer-events:none}
 .textLayer span{position:absolute;white-space:pre;color:transparent;transform-origin:0% 0%;cursor:text;-webkit-user-drag:none}
-.textLayer.on{user-select:text;pointer-events:auto}
-.textLayer ::selection{background:rgba(0,113,227,.25)}
+.textLayer.on{pointer-events:auto;touch-action:none}
+.textLayer ::selection{background:transparent}
+.text-selection-preview{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.text-selection-preview span{position:absolute;background:rgba(0,113,227,.22);border-radius:1px}
+.memo textarea{user-select:text}
 svg.lines{position:absolute;inset:0;pointer-events:none;overflow:visible}
 .hl{position:absolute;mix-blend-mode:multiply;opacity:.43;border-radius:4px;cursor:pointer}
 .hl.mark-underline,.hl.mark-squiggle{mix-blend-mode:normal;opacity:1;background:transparent!important;border-radius:0}
@@ -210,11 +213,16 @@ svg.lines{position:absolute;inset:0;pointer-events:none;overflow:visible}
 .ft.below{transform:none;margin-top:6px}
 .ft button{border-radius:980px;padding:3px 9px;font-size:12px;color:var(--ink2)}
 .ft button:hover{background:var(--fill)}
-.selpop{position:fixed;transform:translate(-50%,-100%)}
+.selpop{position:fixed;max-width:calc(100vw - 16px);flex-wrap:wrap;border-radius:16px}
+.selpop .markgroup{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.selpop .markgroup + .markgroup{border-left:1px solid var(--line2);padding-left:8px}
 .selpop .lb{font-size:11.5px;color:var(--muted);padding-left:3px}
 .selpop .markbtn{height:22px;min-width:34px;border:1px solid var(--line2);border-radius:6px;background:#fff;color:var(--ink2);font-size:11px;padding:0 6px}
 .selpop .markbtn:hover{border-color:var(--accent);color:var(--accent);background:#f5f9ff}
 .selpop .markcolor{width:18px;height:18px;padding:0;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.16)}
+.ft .linecolor{width:20px;height:20px;padding:0;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.16)}
+.ft .linecolor.on{box-shadow:0 0 0 2px var(--accent)}
+.ft .mark-label{font-size:11px;color:var(--muted);padding:0 3px}
 
 /* 문서용 스티커 선택 패널 */
 #stkbar{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(14px);z-index:25;width:min(92vw,820px);
@@ -525,6 +533,7 @@ function setColor(i) {
   if (a) { pushUndo(); a.color = i; if (a.type === 'hl') { const m = memoOf(a); if (m) m.color = i; } changed(); }
 }
 function setTool(t) {
+  cancelTextDrag();
   S.tool = t;
   [...$('#tools').children].forEach((b) => b.classList.toggle('on', b.dataset.t === t));
   S.pages.forEach((p) => {
@@ -572,6 +581,7 @@ window.addEventListener('beforeunload', (e) => { if (S.dirty && S.ann.length) { 
 
 async function openFile(file) {
   if (S.dirty && S.ann.length && !confirm('저장하지 않은 표시가 있습니다. 다른 파일을 열까요?')) return;
+  cancelTextDrag(); hideSelPop();
   toast('여는 중…', 60000);
   const buf = new Uint8Array(await file.arrayBuffer());
   let doc;
@@ -683,11 +693,13 @@ function fitDefault() {                                                    // �
 }
 function setScale(s) {
   if (!S.pages.length) return;
+  cancelTextDrag(); hideSelPop();
   const v = $('#viewer'); const ratio = v.scrollTop / Math.max(1, v.scrollHeight);
   S.scale = Math.max(0.4, Math.min(3, s));
   $('#zoomv').textContent = Math.round(S.scale * 100) + '%';
   for (const P of S.pages) {
     P.el.style.width = P.w * S.scale + 'px'; P.el.style.height = P.h * S.scale + 'px';
+    P.text.style.visibility = 'hidden'; delete P.text.dataset.renderScale; P.selectionModel = null;
     P.drawn = 0;
   }
   v.scrollTop = ratio * v.scrollHeight;
@@ -717,6 +729,9 @@ async function drawPage(P) {
     const old = P.canvas; P.el.replaceChild(c, old); P.canvas = c;
     P.text.innerHTML = ''; P.text.style.setProperty('--scale-factor', scale);
     await pdfjsLib.renderTextLayer({ textContentSource: P.tc, container: P.text, viewport: P.pg.getViewport({ scale }) }).promise;
+    if (P.drawn !== scale) return;
+    P.selectionModel = null;
+    P.text.dataset.renderScale = String(scale); P.text.style.visibility = '';
   } catch (e) { if (e && e.name !== 'RenderingCancelledException') console.warn(e); }
 }
 
@@ -726,11 +741,13 @@ function pushUndo() { S.undo.push(snapshot()); S.redo = []; if (S.undo.length > 
 function refreshUndo() { $('#undo').disabled = !S.undo.length; $('#redo').disabled = !S.redo.length; }
 function undo() {
   if (!S.undo.length) return;
+  cancelTextDrag(); hideSelPop();
   S.redo.push(snapshot()); S.ann = JSON.parse(S.undo.pop()); S.sel = null; S.dirty = true;
   refreshUndo(); renderAnn(); renderList();
 }
 function redo() {
   if (!S.redo.length) return;
+  cancelTextDrag(); hideSelPop();
   S.undo.push(snapshot()); S.ann = JSON.parse(S.redo.pop()); S.sel = null; S.dirty = true;
   refreshUndo(); renderAnn(); renderList();
 }
@@ -751,6 +768,14 @@ function addHl(P, rc, label, kind, mark) {
   if (dup) return dup;
   const a = { id: 'a' + S.seq++, type: 'hl', kind: kind || 'text', mark: mark || 'highlight', page: P.num, x: rc.x, y: rc.y, w: rc.w, h: rc.h, color: S.color, label: label || '' };
   S.ann.push(a); return a;
+}
+function highlightRects(a) { return a.rects && a.rects.length ? a.rects : [a]; }
+function addTextMark(P, rects, label, mark) {
+  const x = Math.min(...rects.map(r => r.x)), y = Math.min(...rects.map(r => r.y));
+  const w = Math.max(...rects.map(r => r.x + r.w)) - x, h = Math.max(...rects.map(r => r.y + r.h)) - y;
+  const a = addHl(P, { x, y, w, h }, label, 'text', mark);
+  a.rects = rects.map(r => ({ ...r }));
+  return a;
 }
 function addMemo(P, x, y, text, anchor, color) {
   const m = { id: 'a' + S.seq++, type: 'memo', page: P.num, x, y, w: MEMO_W, h: 86, text: text || '', anchor: anchor || null, color: color == null ? S.color : color, bold: false, fs: MEMO_FS, textColor: MEMO_TEXT_COLORS[0] };
@@ -963,13 +988,13 @@ $('#stkfile').addEventListener('change', async (e) => {
 $('#stkclose').addEventListener('click', () => { S.stkSel = null; setTool('sel'); renderStickers(); });
 renderStickers();
 
-/* 화면과 PDF/JPG가 같은 쪽 좌표를 사용한다. 물결의 위쪽까지 글자 영역 아래에 둔다. */
+/* 화면과 PDF/JPG에 같은 좌표를 사용하고, 줄 아래 여백 안에 밑줄을 붙인다. */
 function textMarkGeometry(a) {
   const thickness = Math.max(.7, Math.min(1.1, a.h * .06));
   const wave = a.mark === 'squiggle';
-  const amplitude = wave ? Math.max(.5, Math.min(1, a.h * .065)) : 0;
+  const amplitude = wave ? Math.max(.4, Math.min(.8, a.h * .045)) : 0;
   const wavelength = Math.max(4, Math.min(7, a.h * .45));
-  const y = a.h + .3 + thickness / 2 + amplitude;
+  const y = a.h - .5;
   const steps = wave ? Math.max(1, Math.ceil(a.w / wavelength * 12)) : 1;
   const points = [];
   for (let i = 0; i <= steps; i++) {
@@ -989,39 +1014,47 @@ function renderAnn() {
     const P = S.pages[a.page - 1]; if (!P) continue;
     const c = COLORS[a.color] || COLORS[0];
     if (a.type === 'hl') {
-      const d = document.createElement('div');
       const area = a.kind === 'area';
       const mark = a.mark || 'highlight';
-      d.className = 'hl' + (area ? ' area-hl' : '') + (mark !== 'highlight' ? ' mark-' + mark : '') + (S.sel === a.id ? ' on' : ''); d.dataset.id = a.id;
-      Object.assign(d.style, { left: a.x * k + 'px', top: a.y * k + 'px', width: a.w * k + 'px', height: a.h * k + 'px', background: mark === 'highlight' ? c.hex : 'transparent' });
-      d.style.setProperty('--mark-color', a.lineColor || '#e33135');
-      if (mark === 'underline' || mark === 'squiggle') {
-        const g = textMarkGeometry(a);
-        const path = g.points.map(([x, y], i) => (i ? 'L' : 'M') + x + ' ' + y).join(' ');
-        d.innerHTML = '<svg viewBox="0 0 ' + a.w + ' ' + a.h + '" preserveAspectRatio="none" aria-hidden="true"><path stroke-width="' + g.thickness + '" d="' + path + '"/></svg>';
+      for (const rc of highlightRects(a)) {
+        const d = document.createElement('div');
+        d.className = 'hl' + (area ? ' area-hl' : '') + (mark !== 'highlight' ? ' mark-' + mark : '') + (S.sel === a.id ? ' on' : ''); d.dataset.id = a.id;
+        Object.assign(d.style, { left: rc.x * k + 'px', top: rc.y * k + 'px', width: rc.w * k + 'px', height: rc.h * k + 'px', background: mark === 'highlight' ? c.hex : 'transparent' });
+        d.style.setProperty('--mark-color', a.lineColor || '#e33135');
+        if (mark === 'underline' || mark === 'squiggle') {
+          const g = textMarkGeometry({ ...rc, mark });
+          const path = g.points.map(([x, y], i) => (i ? 'L' : 'M') + x + ' ' + y).join(' ');
+          d.innerHTML = '<svg viewBox="0 0 ' + rc.w + ' ' + rc.h + '" preserveAspectRatio="none" aria-hidden="true"><path stroke-width="' + g.thickness + '" d="' + path + '"/></svg>';
+        }
+        d.title = a.label || '';
+        if (area) d.innerHTML = '<span class="hrz" title="끌어서 크기 조절"></span>';
+        P.layer.appendChild(d);
+        if (area) dragArea(d, a, P);
       }
-      d.title = a.label || '';
-      if (area) d.innerHTML = '<span class="hrz" title="끌어서 크기 조절"></span>';
-      P.layer.appendChild(d);
-      if (area) dragArea(d, a, P);
       if (S.sel === a.id) {
+        const pageTop = P.el.getBoundingClientRect().top, viewer = $('#viewer').getBoundingClientRect();
+        const anchor = highlightRects(a).find(r => pageTop + r.y * k >= viewer.top + 40 && pageTop + r.y * k < viewer.bottom) || highlightRects(a)[0];
         const ft = document.createElement('div'); ft.className = 'ft'; ft.dataset.for = a.id;
-        Object.assign(ft.style, { left: a.x * k + 'px', top: a.y * k + 'px' });
-        ft.innerHTML = COLORS.map((col, i) => '<button class="sw' + (i === a.color ? ' on' : '') + '" data-color="' + i + '" title="' + col.name + '" style="background:' + col.hex + '"></button>').join('') +
+        Object.assign(ft.style, { left: anchor.x * k + 'px', top: anchor.y * k + 'px' });
+        const palette = mark === 'highlight'
+          ? COLORS.map((col, i) => '<button class="sw' + (i === a.color ? ' on' : '') + '" data-color="' + i + '" title="' + col.name + '" style="background:' + col.hex + '"></button>').join('')
+          : '<span class="mark-label">' + (mark === 'underline' ? '직선' : '물결') + '</span>' + [['#e33135', '빨강'], ['#1677ff', '파랑']].map(([col, name]) => '<button class="linecolor' + (col === a.lineColor ? ' on' : '') + '" data-line-color="' + col + '" title="' + name + ' 밑줄" aria-label="' + name + ' 밑줄" style="background:' + col + '"></button>').join('');
+        ft.innerHTML = palette +
           '<button data-act="memo">' + (memoOf(a) ? '메모 보기' : '메모') + '</button><button data-act="del">삭제</button>';
         ft.addEventListener('pointerdown', (e) => e.stopPropagation());
         ft.addEventListener('click', (e) => {
           const b = e.target.closest('button'); if (!b) return;
-          if (b.dataset.color !== undefined) { pushUndo(); a.color = +b.dataset.color; const m = memoOf(a); if (m) m.color = a.color; changed(); }
+          if (b.dataset.lineColor) { pushUndo(); a.lineColor = b.dataset.lineColor; changed(); }
+          else if (b.dataset.color !== undefined) { pushUndo(); a.color = +b.dataset.color; const m = memoOf(a); if (m) m.color = a.color; changed(); }
           else if (b.dataset.act === 'del') delAnn(a.id);
           else { const ex = memoOf(a); if (ex) select(ex.id, true); else { pushUndo(); const m = memoForHl(a, ''); S.dirty = true; select(m.id, true); } }
         });
         P.layer.appendChild(ft);
         const maxLeft = Math.max(4, P.w * k - ft.offsetWidth - 4);
-        ft.style.left = Math.min(maxLeft, Math.max(4, a.x * k)) + 'px';
-        if (a.y * k < ft.offsetHeight + 10) {
+        ft.style.left = Math.min(maxLeft, Math.max(4, anchor.x * k)) + 'px';
+        if (anchor.y * k < ft.offsetHeight + 10) {
           ft.classList.add('below');
-          ft.style.top = (a.y + a.h) * k + 'px';
+          ft.style.top = (anchor.y + anchor.h) * k + 'px';
         }
       }
     } else if (a.type === 'stk') {
@@ -1176,7 +1209,7 @@ function bindPage(P) {
     const r = P.el.getBoundingClientRect(), k = S.scale;
     const px = (e.clientX - r.left) / k, py = (e.clientY - r.top) / k;
     const hit = e.target.closest('.hl');
-    if (hit && S.tool !== 'memo' && S.tool !== 'stk') { select(hit.dataset.id); return; }
+    if (hit && S.tool !== 'memo' && S.tool !== 'stk') { e.preventDefault(); select(hit.dataset.id); return; }
     if (S.tool === 'sel') { if (S.sel) { S.sel = null; renderAnn(); renderList(); } return; }
     if (S.tool === 'memo') {
       e.preventDefault(); pushUndo();
@@ -1189,25 +1222,8 @@ function bindPage(P) {
       pushUndo(); const st = addSticker(P, S.stkSel, px, py);
       S.dirty = true; S.stkSel = null; select(st.id); setTool('sel'); renderStickers(); return;
     }
-    if (S.tool === 'hl') {                                          // 드래그 또는 더블클릭으로 글자 선택
-      const sel0 = window.getSelection();                            // 이미 선택된 글자 위에서 끌면 새로 선택되게
-      const multi = e.detail > 1;
-      if (multi) return;                                             // 브라우저의 단어 선택을 그대로 사용
-      if (sel0 && !sel0.isCollapsed) sel0.removeAllRanges();
-      const sx = e.clientX, sy = e.clientY;
-      const up = (ev) => {
-        document.removeEventListener('pointerup', up);
-        const moved = Math.hypot(ev.clientX - sx, ev.clientY - sy);
-        setTimeout(() => {
-          if (moved < 4) {                                           // 한 번 클릭만 한 경우는 칠하지 않음
-            hideSelPop();
-            if (S.sel) { S.sel = null; renderAnn(); renderList(); }
-            return;
-          }
-          highlightSelection(P);
-        }, 0);
-      };
-      document.addEventListener('pointerup', up);
+    if (S.tool === 'hl') {
+      beginTextDrag(P, e);
       return;
     }
     // 영역 도구 : 끈 만큼 네모
@@ -1228,13 +1244,152 @@ function bindPage(P) {
     };
     P.el.addEventListener('pointermove', mv); P.el.addEventListener('pointerup', up);
   });
-  P.text.addEventListener('dblclick', () => {
-    if (S.tool !== 'hl') return;
-    setTimeout(() => highlightSelection(P), 0);
+  P.el.addEventListener('selectstart', (e) => { if (!e.target.closest('textarea,input')) e.preventDefault(); });
+  P.el.addEventListener('dblclick', (e) => {
+    if (S.tool !== 'hl' || e.target.closest('.memo,.ft,.sticker,.hl')) return;
+    e.preventDefault(); cancelTextDrag();
+    const model = textSelectionModel(P), at = textCaret(P, model, e.clientX, e.clientY, true);
+    if (!at) return;
+    const chars = model[at.row].chars;
+    let first = Math.min(at.index, chars.length - 1), last = first + 1;
+    const wordChar = c => c && !/[\s.,;:!?()[\]{}\/]/.test(c.text);
+    while (first > at.segment.first && wordChar(chars[first - 1])) first--;
+    while (last <= at.segment.last && wordChar(chars[last])) last++;
+    previewTextSelection(P, model, { ...at, index: first }, { ...at, index: last });
+    showSelPop(P);
   });
 }
 /* 끌어서 글자를 선택하면 색 고르는 창을 띄우고, 색을 누를 때 칠한다 */
-let pend = null;
+let pend = null, textDrag = null;
+// 글자별 Range는 위치 측정에만 쓴다. 브라우저 Selection을 만들지 않아 Edge 메뉴와 여백 선택을 막는다.
+function textSelectionModel(P) {
+  if (P.text.dataset.renderScale !== String(S.scale)) return [];
+  if (P.selectionModel) return P.selectionModel;
+  const pr = P.el.getBoundingClientRect(), k = S.scale, chars = [], range = document.createRange();
+  for (const span of P.text.querySelectorAll('span')) {
+    const node = span.firstChild;
+    if (!node || node.nodeType !== Node.TEXT_NODE) continue;
+    let offset = 0;
+    for (const text of node.textContent) {
+      range.setStart(node, offset); offset += text.length; range.setEnd(node, offset);
+      const r = range.getBoundingClientRect();
+      if (r.width < .05 || r.height < 1) continue;
+      chars.push({ text, x: (r.left - pr.left) / k, y: (r.top - pr.top) / k, w: r.width / k, h: r.height / k });
+    }
+  }
+  chars.sort((a, b) => a.y - b.y || a.x - b.x);
+  const rows = [];
+  for (const c of chars) {
+    const cy = c.y + c.h / 2;
+    let row = rows.find(r => Math.abs(r.cy - cy) < Math.min(r.h, c.h) * .4);
+    if (!row) { row = { cy, h: c.h, top: c.y, bottom: c.y + c.h, chars: [] }; rows.push(row); }
+    row.top = Math.min(row.top, c.y); row.bottom = Math.max(row.bottom, c.y + c.h); row.chars.push(c);
+  }
+  rows.sort((a, b) => a.cy - b.cy);
+  rows.forEach(row => {
+    row.chars.sort((a, b) => a.x - b.x);
+    row.segments = [];
+    row.chars.forEach((c, i) => {
+      let segment = row.segments[row.segments.length - 1];
+      if (!segment || c.x - segment.right > Math.max(8, row.h * 1.5)) {
+        segment = { left: c.x, right: c.x + c.w, first: i, last: i }; row.segments.push(segment);
+      } else { segment.right = Math.max(segment.right, c.x + c.w); segment.last = i; }
+    });
+  });
+  P.selectionModel = rows;
+  return rows;
+}
+function textCaret(P, rows, clientX, clientY, requireHit) {
+  if (!rows.length) return null;
+  const r = P.el.getBoundingClientRect(), x = (clientX - r.left) / S.scale, y = (clientY - r.top) / S.scale;
+  let ri = 0;
+  rows.forEach((row, i) => { if (Math.abs(row.cy - y) < Math.abs(rows[ri].cy - y)) ri = i; });
+  const row = rows[ri];
+  const distance = s => Math.max(s.left - x, 0, x - s.right);
+  let segment = row.segments[0];
+  row.segments.forEach(s => { if (distance(s) < distance(segment)) segment = s; });
+  if (requireHit && (y < row.top - 2 || y > row.bottom + 2 || distance(segment) > row.h)) return null;
+  let index = segment.last + 1;
+  for (let i = segment.first; i <= segment.last; i++) {
+    if (x < row.chars[i].x + row.chars[i].w / 2) { index = i; break; }
+  }
+  return { row: ri, index, segment };
+}
+function previewTextSelection(P, rows, start, end) {
+  if (!start || !end) return;
+  if (start.row > end.row || (start.row === end.row && start.index > end.index)) [start, end] = [end, start];
+  // 표의 번호·금액 칸은 선택을 시작하고 끝낸 본문 칸 밖이면 포함하지 않는다.
+  const left = Math.min(start.segment.left, end.segment.left) - 1;
+  const right = Math.max(start.segment.right, end.segment.right) + 1;
+  const rects = [], text = [];
+  for (let i = start.row; i <= end.row; i++) {
+    const row = rows[i], first = i === start.row ? start.index : 0, last = i === end.row ? end.index : row.chars.length;
+    const selected = row.chars.slice(first, last).filter(c => c.x + c.w > left && c.x < right);
+    const pieces = [];
+    for (const c of selected) {
+      let p = pieces[pieces.length - 1];
+      if (!p || c.x - p.right > Math.max(8, row.h * 1.5)) {
+        p = { left: c.x, right: c.x + c.w, top: c.y, bottom: c.y + c.h, text: c.text }; pieces.push(p);
+      } else { p.right = Math.max(p.right, c.x + c.w); p.top = Math.min(p.top, c.y); p.bottom = Math.max(p.bottom, c.y + c.h); p.text += c.text; }
+    }
+    pieces.filter(p => p.text.trim()).forEach(p => {
+      rects.push({ x: Math.max(0, p.left - 1), y: Math.max(0, p.top - 1), w: Math.min(P.w, p.right + 1) - Math.max(0, p.left - 1), h: p.bottom - p.top + 2 });
+      text.push(p.text.trim());
+    });
+  }
+  pend = rects.length ? { page: P.num, txt: text.join(' '), rects } : null;
+  let preview = P.el.querySelector('.text-selection-preview');
+  if (!preview) { preview = document.createElement('div'); preview.className = 'text-selection-preview'; P.el.appendChild(preview); }
+  preview.innerHTML = rects.map(r => '<span style="left:' + r.x * S.scale + 'px;top:' + r.y * S.scale + 'px;width:' + r.w * S.scale + 'px;height:' + r.h * S.scale + 'px"></span>').join('');
+}
+function cancelTextDrag() {
+  if (!textDrag) return;
+  const d = textDrag; textDrag = null;
+  cancelAnimationFrame(d.frame);
+  document.removeEventListener('pointermove', d.move);
+  document.removeEventListener('pointerup', d.up);
+  document.removeEventListener('pointercancel', d.cancel);
+  if (d.P.el.hasPointerCapture(d.pointerId)) d.P.el.releasePointerCapture(d.pointerId);
+}
+function updateTextDrag() {
+  const d = textDrag; if (!d || !d.moved) return;
+  previewTextSelection(d.P, d.rows, d.start, textCaret(d.P, d.rows, d.x, d.y));
+}
+function beginTextDrag(P, e) {
+  e.preventDefault(); cancelTextDrag(); hideSelPop();
+  const selection = window.getSelection(); if (selection) selection.removeAllRanges();
+  if (S.sel) { S.sel = null; renderAnn(); renderList(); }
+  const rows = textSelectionModel(P), start = textCaret(P, rows, e.clientX, e.clientY, true);
+  if (!start) return;
+  const d = { P, rows, start, pointerId: e.pointerId, x: e.clientX, y: e.clientY, moved: false, frame: 0 };
+  d.move = ev => {
+    if (ev.pointerId !== d.pointerId) return;
+    ev.preventDefault(); d.x = ev.clientX; d.y = ev.clientY;
+    d.moved ||= Math.hypot(d.x - e.clientX, d.y - e.clientY) >= 3;
+    updateTextDrag();
+  };
+  d.up = ev => {
+    if (ev.pointerId !== d.pointerId) return;
+    d.move(ev); cancelTextDrag();
+    if (d.moved && pend) showSelPop(P); else hideSelPop();
+  };
+  d.cancel = () => { cancelTextDrag(); hideSelPop(); };
+  const scroll = () => {
+    if (textDrag !== d) return;
+    const v = $('#viewer'), r = v.getBoundingClientRect();
+    if (d.moved) {
+      const delta = d.y < r.top + 32 ? -Math.min(18, (r.top + 32 - d.y) / 3) : d.y > r.bottom - 32 ? Math.min(18, (d.y - r.bottom + 32) / 3) : 0;
+      if (delta) { v.scrollTop += delta; updateTextDrag(); }
+    }
+    d.frame = requestAnimationFrame(scroll);
+  };
+  textDrag = d;
+  P.el.setPointerCapture(e.pointerId);
+  document.addEventListener('pointermove', d.move, { passive: false });
+  document.addEventListener('pointerup', d.up);
+  document.addEventListener('pointercancel', d.cancel);
+  d.frame = requestAnimationFrame(scroll);
+}
 function selPop() {
   let el = document.getElementById('selpop');
   if (!el) {
@@ -1245,50 +1400,43 @@ function selPop() {
   }
   return el;
 }
-function hideSelPop() { const el = document.getElementById('selpop'); if (el) el.style.display = 'none'; pend = null; }
-function highlightSelection(P) {
-  const sel = window.getSelection();
-  if (!sel || sel.isCollapsed || !sel.rangeCount) return false;
-  const rg = sel.getRangeAt(0);
-  if (!P.text.contains(rg.startContainer) && !P.text.contains(rg.endContainer)) return false;
-  const rects = [...rg.getClientRects()].filter((x) => x.width > 1.5 && x.height > 3);
-  if (!rects.length) return false;
-  const pr = P.el.getBoundingClientRect(), k = S.scale, lines = [];
-  rects.forEach((x) => {
-    const L = lines.find((l) => Math.abs((l.top + l.bottom) / 2 - (x.top + x.bottom) / 2) < x.height * 0.6);
-    if (L) { L.top = Math.min(L.top, x.top); L.bottom = Math.max(L.bottom, x.bottom); L.left = Math.min(L.left, x.left); L.right = Math.max(L.right, x.right); }
-    else lines.push({ top: x.top, bottom: x.bottom, left: x.left, right: x.right });
-  });
-  pend = {
-    page: P.num,
-    txt: sel.toString().replace(/\s+/g, ' ').trim(),
-    rects: lines.map((l) => ({ x: (l.left - pr.left) / k - 1, y: (l.top - pr.top) / k - 1, w: (l.right - l.left) / k + 2, h: (l.bottom - l.top) / k + 2 })),
-  };
-  const last = lines[lines.length - 1], el = selPop();
-  el.innerHTML = '<span class="lb">형광펜</span>' + COLORS.map((c, i) => '<button class="sw" data-i="' + i + '" title="' + c.name + ' 형광펜" style="background:' + c.hex + '"></button>').join('') +
-    '<span class="lb">밑줄</span><button class="markbtn" data-mark="underline" data-color="#e33135" title="빨간 직선 밑줄">직선</button><button class="markbtn" data-mark="squiggle" data-color="#e33135" title="빨간 꾸불꾸불 밑줄">물결</button>' +
-    '<button class="markcolor" data-mark="underline" data-color="#e33135" title="빨간 직선 밑줄" style="background:#e33135"></button><button class="markcolor" data-mark="underline" data-color="#1677ff" title="파란 직선 밑줄" style="background:#1677ff"></button>' +
-    '<button class="markcolor" data-mark="squiggle" data-color="#e33135" title="빨간 물결 밑줄" style="background:#e33135"></button><button class="markcolor" data-mark="squiggle" data-color="#1677ff" title="파란 물결 밑줄" style="background:#1677ff"></button>';
+function hideSelPop() {
+  const el = document.getElementById('selpop'); if (el) el.style.display = 'none';
+  document.querySelectorAll('.text-selection-preview').forEach(el => el.remove()); pend = null;
+}
+function showSelPop(P) {
+  if (!pend || !pend.rects.length) return;
+  const el = selPop();
+  el.innerHTML = '<span class="markgroup" role="group" aria-label="형광펜 색상"><span class="lb">형광펜</span>' + COLORS.map((c, i) => '<button class="sw" data-i="' + i + '" title="' + c.name + ' 형광펜" style="background:' + c.hex + '"></button>').join('') + '</span>' +
+    [['underline', '직선'], ['squiggle', '물결']].map(([mark, label]) => '<span class="markgroup" role="group" aria-label="' + label + ' 밑줄 색상"><button class="markbtn" data-mark="' + mark + '" data-color="#e33135" title="빨간 ' + label + ' 밑줄">' + label + '</button>' +
+      [['#e33135', '빨간'], ['#1677ff', '파란']].map(([color, name]) => '<button class="markcolor" data-mark="' + mark + '" data-color="' + color + '" title="' + name + ' ' + label + ' 밑줄" aria-label="' + name + ' ' + label + ' 밑줄" style="background:' + color + '"></button>').join('') + '</span>').join('');
   el.style.display = 'flex';
-  el.style.left = Math.min(window.innerWidth - 20, Math.max(90, (last.left + last.right) / 2)) + 'px';
-  el.style.top = Math.max(46, lines[0].top - 6) + 'px';
-  return true;
+  const pr = P.el.getBoundingClientRect(), first = pend.rects[0], last = pend.rects[pend.rects.length - 1];
+  el.style.left = Math.max(8, Math.min(window.innerWidth - el.offsetWidth - 8, pr.left + (first.x + first.w / 2) * S.scale - el.offsetWidth / 2)) + 'px';
+  const top = pr.top + first.y * S.scale - el.offsetHeight - 8;
+  el.style.top = Math.max(8, Math.min(window.innerHeight - el.offsetHeight - 8, top >= 52 ? top : pr.top + (last.y + last.h) * S.scale + 8)) + 'px';
 }
 function applyPend(mark, ci, lineColor) {
   if (!pend) return;
   const P = S.pages[pend.page - 1]; if (!P) { hideSelPop(); return; }
   if (mark === 'highlight') { S.color = ci; setColorUI(); }
   pushUndo();
-  let first = null;
-  pend.rects.forEach((rc, i) => { const a = addHl(P, rc, i === 0 ? pend.txt : '', 'text', mark); if (mark !== 'highlight') a.lineColor = lineColor || '#e33135'; if (!first) first = a; });
-  const sel = window.getSelection(); if (sel) sel.removeAllRanges();
+  const a = addTextMark(P, pend.rects, pend.txt, mark);
+  if (mark !== 'highlight') a.lineColor = lineColor || '#e33135';
   hideSelPop();
   S.dirty = true; renderAnn(); renderList();
-  if (first) select(first.id);
+  select(a.id);
 }
 document.addEventListener('pointerdown', (e) => { if (!e.target.closest('#selpop')) hideSelPop(); }, true);
 document.addEventListener('dragstart', (e) => { if (e.target.closest && e.target.closest('.textLayer')) e.preventDefault(); });
-document.addEventListener('scroll', hideSelPop, true);
+document.addEventListener('scroll', () => { if (textDrag) updateTextDrag(); else hideSelPop(); }, true);
+document.addEventListener('copy', (e) => {
+  if (pend && e.clipboardData && !/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName)) {
+    e.clipboardData.setData('text/plain', pend.txt); e.preventDefault();
+  }
+});
+window.addEventListener('blur', () => { cancelTextDrag(); hideSelPop(); });
+window.addEventListener('resize', () => { cancelTextDrag(); hideSelPop(); });
 /* 키보드 */
 document.addEventListener('keydown', (e) => {
   const typing = /^(INPUT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName);
@@ -1296,7 +1444,7 @@ document.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y' && !typing) { e.preventDefault(); redo(); return; }
   if (typing) { if (e.key === 'Escape') document.activeElement.blur(); return; }
   if (e.key === 'Delete' || e.key === 'Backspace') { if (S.sel) { e.preventDefault(); delAnn(S.sel); } }
-  else if (e.key === 'Escape') { S.sel = null; renderAnn(); renderList(); }
+  else if (e.key === 'Escape') { cancelTextDrag(); hideSelPop(); S.sel = null; renderAnn(); renderList(); }
   else if (e.key === 'v' || e.key === 'V') setTool('sel');
   else if (e.key === 'h' || e.key === 'H') setTool('hl');
   else if (e.key === 'a' || e.key === 'A') setTool('area');
@@ -1448,7 +1596,8 @@ function renderList() {
     const on = S.sel && (S.sel === a.id || (e.memo && S.sel === e.memo.id));
     d.className = 'it' + (on ? ' on' : '');
     const label = e.hl ? (e.hl.label || '(칠한 영역)') : '(메모만)';
-    d.innerHTML = '<div class="b"><div class="l"><span class="pg">p.' + a.page + '</span><span class="dot" style="background:' + c.hex + '"></span>' + esc(label) + '</div>' +
+    const dotColor = a.type === 'hl' && a.mark && a.mark !== 'highlight' ? (a.lineColor || '#e33135') : c.hex;
+    d.innerHTML = '<div class="b"><div class="l"><span class="pg">p.' + a.page + '</span><span class="dot" style="background:' + dotColor + '"></span>' + esc(label) + '</div>' +
       (e.memo && e.memo.text ? '<div class="m">' + esc(e.memo.text) + '</div>' : '') + '</div><button class="x" title="지우기">✕</button>';
     d.addEventListener('click', (ev) => {
       if (ev.target.closest('.x')) { delAnn(a.id); return; }
@@ -1509,20 +1658,23 @@ async function buildMarkedPdf() {
     // 1) 형광펜
     for (const a of S.ann) {
       if (a.type !== 'hl') continue;
-      const P = S.pages[a.page - 1], pg = pages[a.page - 1], r = pdfRect(P, a);
-      if (a.mark === 'underline' || a.mark === 'squiggle') {
-        const g = textMarkGeometry(a);
-        const { pushGraphicsState, popGraphicsState, setStrokingColor, setLineWidth, setLineCap, setLineJoin, moveTo, lineTo, stroke } = PDFLib;
-        // 각 점을 변환해 회전하거나 잘라낸 PDF에서도 화면과 같은 위치에 저장한다.
-        const points = g.points.map(([x, y]) => P.vp1.convertToPdfPoint(a.x + x, a.y + y));
-        pg.pushOperators(
-          pushGraphicsState(), setStrokingColor(hexRgb(a.lineColor || '#e33135')),
-          setLineWidth(g.thickness), setLineCap(1), setLineJoin(1),
-          ...points.map(([x, y], i) => i ? lineTo(x, y) : moveTo(x, y)),
-          stroke(), popGraphicsState()
-        );
-      } else {
-        pg.drawRectangle({ x: r.x, y: r.y, width: r.w, height: r.h, color: hexRgb((COLORS[a.color] || COLORS[0]).hex), opacity: 0.43, blendMode: BlendMode.Multiply });
+      const P = S.pages[a.page - 1], pg = pages[a.page - 1];
+      for (const rc of highlightRects(a)) {
+        const r = pdfRect(P, rc);
+        if (a.mark === 'underline' || a.mark === 'squiggle') {
+          const g = textMarkGeometry({ ...rc, mark: a.mark });
+          const { pushGraphicsState, popGraphicsState, setStrokingColor, setLineWidth, setLineCap, setLineJoin, moveTo, lineTo, stroke } = PDFLib;
+          // 각 점을 변환해 회전하거나 잘라낸 PDF에서도 화면과 같은 위치에 저장한다.
+          const points = g.points.map(([x, y]) => P.vp1.convertToPdfPoint(rc.x + x, rc.y + y));
+          pg.pushOperators(
+            pushGraphicsState(), setStrokingColor(hexRgb(a.lineColor || '#e33135')),
+            setLineWidth(g.thickness), setLineCap(1), setLineJoin(1),
+            ...points.map(([x, y], i) => i ? lineTo(x, y) : moveTo(x, y)),
+            stroke(), popGraphicsState()
+          );
+        } else {
+          pg.drawRectangle({ x: r.x, y: r.y, width: r.w, height: r.h, color: hexRgb((COLORS[a.color] || COLORS[0]).hex), opacity: 0.43, blendMode: BlendMode.Multiply });
+        }
       }
     }
     // 2) 스티커
