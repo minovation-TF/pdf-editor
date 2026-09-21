@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: 2026-09-22-e7b51ff -->
+<!-- build: 2026-09-22-0833f5b-wave2 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -172,7 +172,7 @@ svg.lines{position:absolute;inset:0;pointer-events:none;overflow:visible}
 .hl.mark-underline,.hl.mark-squiggle{mix-blend-mode:normal;opacity:1;background:transparent!important;border-radius:0}
 .hl.mark-underline{border-bottom:2px solid var(--mark-color,#e33135)}
 .hl.mark-squiggle svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
-.hl.mark-squiggle path{fill:none;stroke:var(--mark-color,#e33135);stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round}
+.hl.mark-squiggle path{fill:none;stroke:var(--mark-color,#e33135);stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
 .hl.on{outline:2px solid var(--accent);outline-offset:1px;opacity:.56}
 .hl.area-hl{cursor:move}
 .hl .hrz{position:absolute;right:3px;bottom:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 0 0 1.5px var(--accent),0 2px 6px rgba(0,0,0,.16);cursor:nwse-resize;display:none;mix-blend-mode:normal}
@@ -980,7 +980,7 @@ function renderAnn() {
       const mark = a.mark || 'highlight';
       d.className = 'hl' + (area ? ' area-hl' : '') + (mark !== 'highlight' ? ' mark-' + mark : '') + (S.sel === a.id ? ' on' : ''); d.dataset.id = a.id;
       Object.assign(d.style, { left: a.x * k + 'px', top: a.y * k + 'px', width: a.w * k + 'px', height: a.h * k + 'px', background: mark === 'highlight' ? c.hex : 'transparent', '--mark-color': a.lineColor || '#e33135' });
-      if (mark === 'squiggle') d.innerHTML = '<svg viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0 11 Q 5 8 10 11 T20 11 T30 11 T40 11 T50 11 T60 11 T70 11 T80 11 T90 11 T100 11"/></svg>';
+      if (mark === 'squiggle') d.innerHTML = '<svg viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0 17 Q 1.5 14.7 3 17 T6 17 T9 17 T12 17 T15 17 T18 17 T21 17 T24 17 T27 17 T30 17 T33 17 T36 17 T39 17 T42 17 T45 17 T48 17 T51 17 T54 17 T57 17 T60 17 T63 17 T66 17 T69 17 T72 17 T75 17 T78 17 T81 17 T84 17 T87 17 T90 17 T93 17 T96 17 T99 17"/></svg>';
       d.title = a.label || '';
       if (area) d.innerHTML = '<span class="hrz" title="끌어서 크기 조절"></span>';
       P.layer.appendChild(d);
