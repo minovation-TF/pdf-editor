@@ -267,7 +267,7 @@ body.dragging .card{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent
 body.stk-on #toast{bottom:152px}
 @media (max-width:900px){ main{grid-template-columns:1fr} aside{display:none} #brandci{width:150px;right:14px;bottom:14px} }
 </style>
-<link rel="stylesheet" href="assets/editor.css?v=20261015-compact">
+<link rel="stylesheet" href="assets/editor.css?v=20261015-panel">
 </head>
 <body>
 <div id="app">
@@ -288,8 +288,9 @@ body.stk-on #toast{bottom:152px}
   </div>
 </header>
 <main>
-  <button class="panel-toggle is-open" id="toggle-sidebar" type="button" aria-expanded="true" aria-controls="sidebar" aria-label="패널 닫기" title="패널 닫기"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="panel-cross" d="m7 7 10 10M17 7 7 17"/><g class="panel-open"><rect x="4" y="5" width="16" height="14" rx="1"/><path d="M10 5v14m3-9 3 2-3 2"/></g></svg></button>
   <aside id="sidebar" aria-label="편집 패널">
+    <div class="sidebar-heading"><span>편집 패널</span><button class="panel-toggle is-open" id="toggle-sidebar" type="button" aria-expanded="true" aria-controls="sidebar-content" aria-label="패널 접기" title="패널 접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m11 7-5 5 5 5m7-10-5 5 5 5"/></svg></button></div>
+    <div id="sidebar-content">
     <section id="memo-inspector" hidden>
       <div class="memo-inspector-head"><h3>메모</h3><button id="memo-delete" class="memo-delete" type="button" title="메모 삭제">삭제</button></div>
       <label class="field-label" for="memo-text">내용</label><textarea id="memo-text" class="inspector-input" data-memo-prop="text" rows="3" aria-label="메모 내용" placeholder="문서 위에서도 바로 입력할 수 있어요"></textarea>
@@ -319,6 +320,7 @@ body.stk-on #toast{bottom:152px}
     </section>
 
     <details class="usage-note"><summary>사용 안내</summary><p>PDF와 메모는 서버로 전송되지 않습니다. 내 문구는 이 브라우저에 저장됩니다.</p><p>형광펜은 글자를 끌어 선택하세요. 메모는 문서 위에서 직접 쓰거나 편집 패널에서 바꿀 수 있습니다. 모서리를 끌면 크기를 조절할 수 있습니다.</p><p>Delete 삭제 · Ctrl+Z 되돌리기</p></details>
+    </div>
   </aside>
   <section id="viewer">
     <div id="pages"></div>
@@ -595,9 +597,11 @@ window.addEventListener('resize',()=>{if($('#memo-font-menu').matches(':popover-
 function updateSidebarButton(){
   const open=innerWidth<=760 ? document.body.classList.contains('sidebar-open') : !document.body.classList.contains('sidebar-hidden');
   $('#toggle-sidebar').setAttribute('aria-expanded',String(open));
-  $('#toggle-sidebar').setAttribute('aria-label',open?'패널 닫기':'패널 열기');
-  $('#toggle-sidebar').title=open?'패널 닫기':'패널 열기';
+  $('#toggle-sidebar').setAttribute('aria-label',open?'패널 접기':'패널 펼치기');
+  $('#toggle-sidebar').title=open?'패널 접기':'패널 펼치기';
   $('#toggle-sidebar').classList.toggle('is-open',open);
+  $('#sidebar').classList.toggle('is-collapsed',!open);
+  $('#sidebar-content').hidden=!open;
   if(!open&&$('#memo-font-menu').matches(':popover-open'))$('#memo-font-menu').hidePopover();
 }
 $('#toggle-sidebar').addEventListener('click',()=>{

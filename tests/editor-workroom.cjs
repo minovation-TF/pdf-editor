@@ -50,10 +50,11 @@ const output=path.join(root,'tmp',live?'editor-workroom-live':'editor-workroom-q
   await page.locator('#colors button').nth(1).click();
   assert.equal(await page.locator('#colors').isVisible(),false);assert.equal(await page.evaluate(()=>window.__tool.S.color),1);
   const dock=await page.locator('#toggle-sidebar').boundingBox(),side=await page.locator('#sidebar').boundingBox();
-  assert(Math.abs(dock.x+dock.width/2-side.x-side.width)<2);
-  await page.locator('#toggle-sidebar').click();assert.equal(await page.locator('#sidebar').isVisible(),false);
-  assert.equal(await page.locator('#toggle-sidebar').getAttribute('title'),'패널 열기');
-  await page.locator('#toggle-sidebar').click();assert(await page.locator('#sidebar').isVisible());
+  assert(dock.x>=side.x&&dock.x+dock.width<=side.x+side.width&&dock.y>=side.y);
+  assert.equal(await page.locator("#sidebar #toggle-sidebar").count(),1);
+  await page.locator('#toggle-sidebar').click();assert(await page.locator('#sidebar').isVisible());assert.equal(await page.locator('#sidebar-content').isVisible(),false);assert((await page.locator('#sidebar').boundingBox()).width<=36);
+  assert.equal(await page.locator('#toggle-sidebar').getAttribute('title'),'패널 펼치기');
+  await page.locator('#toggle-sidebar').click();assert(await page.locator('#sidebar-content').isVisible());
   await page.setViewportSize({width:1440,height:1000});
   const point=async(x,y)=>page.evaluate(({x,y})=>{const S=window.__tool.S,r=S.pages[0].el.getBoundingClientRect();return{x:r.left+x*S.scale,y:r.top+y*S.scale};},{x,y});
   const dragPage=async(x1,y1,x2,y2)=>{const a=await point(x1,y1),b=await point(x2,y2);await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(b.x,b.y,{steps:10});await page.mouse.up();};
@@ -137,7 +138,7 @@ const output=path.join(root,'tmp',live?'editor-workroom-live':'editor-workroom-q
   await page.setViewportSize({width:920,height:668});await page.screenshot({path:path.join(output,'loaded-920.png')});
   await page.locator('#zfit').click();await page.waitForFunction(()=>window.__tool.S.pages[0].text.dataset.renderScale===String(window.__tool.S.scale));await page.locator('.memo textarea').first().click();await page.setViewportSize({width:390,height:844});
   await page.locator('#toggle-sidebar').click();
-  assert(await page.locator('#sidebar').isVisible());
+  assert(await page.locator('#sidebar-content').isVisible());
   await page.screenshot({path:path.join(output,'memo-mobile.png')});
   await page.locator('#toggle-sidebar').click();
   await page.locator('#tools [data-t="stk"]').click();await page.screenshot({path:path.join(output,'sticker-mobile.png')});
