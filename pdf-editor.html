@@ -267,40 +267,40 @@ body.dragging .card{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent
 body.stk-on #toast{bottom:152px}
 @media (max-width:900px){ main{grid-template-columns:1fr} aside{display:none} #brandci{width:150px;right:14px;bottom:14px} }
 </style>
-<link rel="stylesheet" href="assets/editor.css">
+<link rel="stylesheet" href="assets/editor.css?v=20261015-compact">
 </head>
 <body>
 <div id="app">
 <header class="editor-header">
   <div class="header-primary">
-    <a class="workroom-home" id="home-link" href="https://minovation-tf.github.io/meritz-workroom/" aria-label="WORKROOM 홈으로 돌아가기" title="홈으로 돌아가기"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="2" y="2" width="24" height="24"/><path d="M14 2v24m0-12h12"/></svg><span>WORKROOM<span class="period">.</span></span><span class="home-caption">홈으로</span></a>
+    <a class="workroom-home" id="home-link" href="https://minovation-tf.github.io/meritz-workroom/" aria-label="홈으로 돌아가기" title="홈으로 돌아가기"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="3" y="3" width="22" height="22"/><path d="M14 3v22m0-11h11"/></svg></a>
     <span class="editor-label">PDF Editor</span>
     <label class="btn ghost" for="file" tabindex="0" role="button" id="open-file-button">PDF 열기</label>
     <input id="file" type="file" accept="application/pdf,.pdf" hidden>
-    <span class="fname" id="fname"></span>
-    <button class="btn ghost" id="toggle-sidebar" type="button" aria-expanded="true" aria-controls="sidebar">패널 닫기</button>
-    <div class="savegrp"><div class="seg savefmt" aria-label="저장 파일 형식"><label><input type="radio" name="fmt" value="pdf" checked><span>PDF</span></label><label><input type="radio" name="fmt" value="jpg"><span>JPG</span></label></div><button class="btn primary" id="save" disabled>표시본 저장</button></div>
-  </div>
-  <div class="header-tools">
-    <div class="seg" id="tools" role="group" aria-label="편집 도구" title="도구 (V · H · A · M · S)"><button data-t="sel">선택</button><button data-t="hl" class="on">형광펜</button><button data-t="area">영역</button><button data-t="memo">메모</button><button data-t="stk">스티커</button></div>
-    <div class="toolbar-group" id="colors" role="group" aria-label="형광펜 색상"></div>
+    <div class="header-tools">
+    <div class="seg" id="tools" role="group" aria-label="편집 도구" title="도구 (V · H · A · M · S)"><button data-t="sel">선택</button><button data-t="hl" class="on" popovertarget="colors" aria-expanded="false" aria-controls="colors">형광펜</button><button data-t="area">영역</button><button data-t="memo">메모</button><button data-t="stk">스티커</button></div>
+    <div id="colors" popover="auto" role="group" aria-label="형광펜 색상"></div>
     <div class="toolbar-group toolbar-zoom"><span class="stepper"><button id="zout" title="축소" aria-label="축소">−</button><span id="zoomv">100%</span><button id="zin" title="확대" aria-label="확대">+</button></span><button class="btn ghost" id="zfit">폭 맞춤</button><button class="btn ghost" id="zpage">쪽 맞춤</button></div>
     <div class="history-group"><button class="btn ghost history-btn" id="undo" title="되돌리기 (Ctrl+Z)" aria-label="되돌리기" disabled>↶</button><button class="btn ghost history-btn" id="redo" title="되살리기 (Ctrl+Y)" aria-label="되살리기" disabled>↷</button></div>
+    </div>
+    <span class="fname" id="fname"></span>
+    <div class="savegrp"><div class="seg savefmt" aria-label="저장 파일 형식"><label><input type="radio" name="fmt" value="pdf" checked><span>PDF</span></label><label><input type="radio" name="fmt" value="jpg"><span>JPG</span></label></div><button class="btn primary" id="save" disabled>표시본 저장</button></div>
   </div>
 </header>
 <main>
+  <button class="panel-toggle is-open" id="toggle-sidebar" type="button" aria-expanded="true" aria-controls="sidebar" aria-label="패널 닫기" title="패널 닫기"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="panel-cross" d="m7 7 10 10M17 7 7 17"/><g class="panel-open"><rect x="4" y="5" width="16" height="14" rx="1"/><path d="M10 5v14m3-9 3 2-3 2"/></g></svg></button>
   <aside id="sidebar" aria-label="편집 패널">
     <section id="memo-inspector" hidden>
-      <div class="memo-inspector-head"><h3>메모 편집</h3><span class="inspector-badge">TEXT & SIZE</span></div>
-      <label class="field-label" for="memo-text">내용</label><textarea id="memo-text" class="inspector-input" data-memo-prop="text" rows="3" aria-label="메모 내용" placeholder="메모를 입력하세요"></textarea>
-      <label class="field-label" for="memo-font">글꼴</label><select id="memo-font" class="inspector-input" data-memo-prop="font" aria-label="메모 글꼴"></select>
-      <label class="field-label" for="memo-size">글자 크기 (pt)</label><div class="memo-slider-row"><input id="memo-size-range" type="range" min="7" max="40" step="1" data-memo-prop="fs" aria-label="글자 크기 슬라이더"><input id="memo-size" class="inspector-input" type="number" min="7" max="40" data-memo-prop="fs" aria-label="글자 크기"><button class="btn ghost" id="memo-bold" type="button" aria-label="메모 굵게" aria-pressed="false">B</button></div>
-      <div class="inspector-grid"><div><label class="field-label" for="memo-width">가로 (pt)</label><input id="memo-width" class="inspector-input" type="number" min="90" max="600" data-memo-prop="w" aria-label="메모 가로"></div><div><label class="field-label" for="memo-height">세로 (pt)</label><input id="memo-height" class="inspector-input" type="number" min="55" max="800" data-memo-prop="h" aria-label="메모 세로"></div></div>
-      <span class="field-label">글자색</span><div class="inspector-color-row" id="memo-text-colors" role="group" aria-label="메모 글자색"></div>
-      <span class="field-label">배경색</span><div class="inspector-color-row" id="memo-paper-colors" role="group" aria-label="메모 배경색"></div>
-      <div class="memo-actions"><button class="btn primary" type="button" id="memo-add">문서에 새 메모 추가</button><button class="btn ghost" type="button" id="memo-delete">삭제</button></div>
-      <p id="memo-status" role="status"></p>
+      <div class="memo-inspector-head"><h3>메모</h3><button id="memo-delete" class="memo-delete" type="button" title="메모 삭제">삭제</button></div>
+      <label class="field-label" for="memo-text">내용</label><textarea id="memo-text" class="inspector-input" data-memo-prop="text" rows="3" aria-label="메모 내용" placeholder="문서 위에서도 바로 입력할 수 있어요"></textarea>
+      <label class="field-label" for="memo-font">글꼴</label><button id="memo-font" class="memo-font-trigger" type="button" popovertarget="memo-font-menu" aria-haspopup="dialog" aria-controls="memo-font-menu" aria-expanded="false"><span class="font-current">Workroom Sans</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button>
+      <div id="memo-font-menu" popover="auto" role="dialog" aria-label="글꼴 선택"><input class="inp" id="memo-font-search" type="search" placeholder="글꼴 검색" aria-label="글꼴 검색" autocomplete="off"><div id="memo-font-list" role="listbox" aria-label="메모 글꼴"></div><p id="memo-font-empty" hidden>검색 결과가 없습니다.</p></div>
+      <div class="memo-control-row"><label for="memo-size">글자 크기</label><div class="memo-type-controls"><div class="memo-type-stepper"><button id="memo-smaller" type="button" title="글자 작게" aria-label="글자 작게">−</button><input id="memo-size" type="number" min="7" max="40" data-memo-prop="fs" aria-label="글자 크기"><span>pt</span><button id="memo-larger" type="button" title="글자 크게" aria-label="글자 크게">+</button></div><button id="memo-bold" class="memo-bold" type="button" title="굵게" aria-label="메모 굵게" aria-pressed="false">B</button></div></div>
+      <div class="memo-control-row"><span>글자색</span><div class="inspector-color-row" id="memo-text-colors" role="group" aria-label="메모 글자색"></div></div>
+      <div class="memo-control-row"><span>배경색</span><div class="inspector-color-row" id="memo-paper-colors" role="group" aria-label="메모 배경색"></div></div>
+      <div class="memo-opacity-label"><label for="memo-transparency">배경 투명도</label><output id="memo-transparency-value" for="memo-transparency">100%</output></div><input id="memo-transparency" type="range" min="0" max="100" value="100" step="1" aria-label="메모 배경 투명도">
     </section>
+
     <section>
       <div class="search-heading"><label for="q">담보 찾기</label><div class="sugwrap"><input class="inp" id="q" placeholder="담보명 검색" aria-label="담보 찾기" autocomplete="off"><div class="sugbox" id="sug"></div></div></div>
       <div class="search-actions"><button class="btn" id="qall" hidden>이 단어가 있는 줄 모두 칠하기</button></div>
@@ -487,78 +487,118 @@ const S = {
   ann: [], sel: null, undo: [], redo: [], dirty: false, seq: 1, results: [],
   imgs: [], stkSel: null, stkColor: 'red',          // imgs : 사용자가 올린 스티커 그림
 };
-const memoDraft = {text:'', w:180, h:96, fs:12, font:'', bold:false, textColor:'#171717', paper:'#ffffff'};
+const memoDraft = {text:'', w:150, h:60, fs:12, font:'', bold:false, textColor:'#111111', paper:'#ffffff', paperOpacity:0};
 const MEMO_PAPERS = [['#ffffff','흰색'],['#fff4c8','노랑'],['#e1f3e7','초록'],['#fbe3e8','분홍']];
 let inspectorMemoId = null;
-function inspectorModel() { const a = selAnn(); return a?.type === 'memo' ? a : memoDraft; }
-function syncMemoInspector() {
-  const m = inspectorModel(), selected = m !== memoDraft;
-  $('#memo-inspector').hidden = !selected && S.tool !== 'memo';
-  const id = selected ? m.id : 'draft', switched = id !== inspectorMemoId;
-  inspectorMemoId = id;
-  document.querySelectorAll('[data-memo-prop]').forEach(el => {
-    if (switched || document.activeElement !== el) el.value = m[el.dataset.memoProp] ?? '';
-  });
-  $('#memo-bold').setAttribute('aria-pressed', String(!!m.bold));
-  $('#memo-delete').disabled = !selected;
-  $('#memo-status').textContent = selected ? '내용과 크기가 문서에 바로 반영됩니다.' : '내용을 적은 뒤 문서에서 붙일 위치를 누르세요.';
-  document.querySelectorAll('[data-memo-paper]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.memoPaper === (m.paper || '#ffffff'))));
-  document.querySelectorAll('[data-memo-color]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.memoColor === m.textColor)));
+function inspectorModel() { const a=selAnn(); return a?.type==='memo'?a:memoDraft; }
+function memoOpacity(m){return Number.isFinite(m.paperOpacity)?Math.max(0,Math.min(1,m.paperOpacity)):0;}
+function fontName(value){return value?(MEMO_FONTS.find(f=>f.value===value)?.name.replace(' · 가나다 ABC','')||value):'Workroom Sans';}
+function updateFontLabel(value){
+  const label=$('#memo-font .font-current');label.textContent=fontName(value);
+  label.style.fontFamily=value?'"'+value+'",'+FONT:FONT;
+  label.style.fontSize=/^(Nanum|Ongeulip|Insungit)/.test(value)?'22px':'15px';
+  document.querySelectorAll('.font-option').forEach(row=>row.setAttribute('aria-selected',String(row.dataset.font===value)));
 }
-function applyMemoPreview(m) {
-  if (m === memoDraft) return;
-  const P = S.pages[m.page - 1], el = P?.layer.querySelector('.memo[data-id="' + m.id + '"]');
-  if (!el) return;
-  clampMemo(P, m);
-  Object.assign(el.style, {left:m.x*S.scale+'px',top:m.y*S.scale+'px',width:m.w*S.scale+'px',height:m.h*S.scale+'px',background:m.paper || '#fff'});
-  const ta = el.querySelector('textarea');
-  if (document.activeElement !== ta) ta.value = m.text;
-  Object.assign(ta.style,{fontSize:m.fs*S.scale+'px',lineHeight:m.fs*1.42*S.scale+'px',fontFamily:m.font ? '"'+m.font+'",'+FONT : FONT,fontWeight:m.bold?'700':'400',color:m.textColor});
-  S.dirty = true; drawLines(P); renderList();
+function syncMemoInspector(){
+  const m=inspectorModel(),selected=m!==memoDraft;
+  $('#memo-inspector').hidden=!selected;
+  const id=selected?m.id:'draft',switched=id!==inspectorMemoId;inspectorMemoId=id;
+  document.querySelectorAll('[data-memo-prop]').forEach(el=>{if(switched||document.activeElement!==el)el.value=m[el.dataset.memoProp]??'';});
+  $('#memo-bold').setAttribute('aria-pressed',String(!!m.bold));
+  $('#memo-delete').disabled=!selected;
+  updateFontLabel(m.font||'');
+  const transparency=Math.round((1-memoOpacity(m))*100);
+  if(document.activeElement!==$('#memo-transparency'))$('#memo-transparency').value=transparency;
+  $('#memo-transparency-value').textContent=transparency+'%';
+  document.querySelectorAll('[data-memo-paper]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.memoPaper===(m.paper||'#ffffff'))));
+  document.querySelectorAll('[data-memo-color]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.memoColor===m.textColor)));
+  if(!selected&&$('#memo-font-menu').matches(':popover-open'))$('#memo-font-menu').hidePopover();
 }
-function updateMemoProperty(prop, value, startUndo) {
-  const m = inspectorModel();
-  if (['w','h','fs'].includes(prop)) {
-    value = Number(value); if (!Number.isFinite(value)) return;
-    const P = m === memoDraft ? null : S.pages[m.page-1];
-    const limits = prop === 'fs' ? [7,40] : prop === 'w' ? [90,P ? P.w-4 : 600] : [55,P ? P.h-4 : 800];
-    value = Math.round(Math.max(limits[0],Math.min(limits[1],value)));
-  }
-  if (m[prop] === value) return;
-  if (m !== memoDraft && startUndo) pushUndo();
-  m[prop] = value; applyMemoPreview(m); syncMemoInspector();
+function applyMemoPreview(m){
+  if(m===memoDraft)return;
+  const P=S.pages[m.page-1],el=P?.layer.querySelector('.memo[data-id="'+m.id+'"]');if(!el)return;
+  clampMemo(P,m);const opacity=memoOpacity(m);
+  Object.assign(el.style,{left:m.x*S.scale+'px',top:m.y*S.scale+'px',width:m.w*S.scale+'px',height:m.h*S.scale+'px',background:hexRgba(m.paper||'#fff',opacity)});
+  el.classList.toggle('clear-paper',opacity===0);
+  const ta=el.querySelector('textarea');if(document.activeElement!==ta)ta.value=m.text;
+  Object.assign(ta.style,{fontSize:m.fs*S.scale+'px',lineHeight:m.fs*1.42*S.scale+'px',padding:6*S.scale+'px',fontFamily:m.font?'"'+m.font+'",'+FONT:FONT,fontWeight:m.bold?'700':'400',color:m.textColor});
+  S.dirty=true;drawLines(P);renderList();
 }
-$('#memo-font').innerHTML = '<option value="">기본 · Workroom Sans</option>' + MEMO_FONTS.map(f => '<option value="'+esc(f.value)+'">'+esc(f.name.replace(' · 가나다 ABC',''))+'</option>').join('');
-document.querySelectorAll('[data-memo-prop]').forEach(el => {
-  let changedInFocus = false;
-  el.addEventListener('focus', () => {changedInFocus = false;});
-  const edit = () => {
-    if (el.value === '' && ['w','h','fs'].includes(el.dataset.memoProp)) return;
-    updateMemoProperty(el.dataset.memoProp, el.value, !changedInFocus); changedInFocus = true;
-  };
-  el.addEventListener('input',edit);
-  el.addEventListener('change',() => { edit(); syncMemoInspector(); });
-  el.addEventListener('blur',() => { changedInFocus=false; syncMemoInspector(); });
+function updateMemoProperty(prop,value,startUndo){
+  const m=inspectorModel();
+  if(prop==='fs'){value=Number(value);if(!Number.isFinite(value))return;value=Math.round(Math.max(7,Math.min(40,value)));}
+  if(prop==='paperOpacity')value=Math.max(0,Math.min(1,Number(value)));
+  if(m[prop]===value)return;
+  if(m!==memoDraft&&startUndo)pushUndo();
+  m[prop]=value;
+  if(prop!=='text')memoDraft[prop]=value;
+  applyMemoPreview(m);syncMemoInspector();
+}
+document.querySelectorAll('[data-memo-prop]').forEach(el=>{
+  let changedInFocus=false;
+  el.addEventListener('focus',()=>{changedInFocus=false;});
+  el.addEventListener('input',()=>{if(el.value===''&&el.dataset.memoProp==='fs')return;updateMemoProperty(el.dataset.memoProp,el.value,!changedInFocus);changedInFocus=true;});
+  el.addEventListener('blur',()=>{changedInFocus=false;syncMemoInspector();});
 });
-$('#memo-text-colors').innerHTML = MEMO_TEXT_COLORS.map((color,i)=>'<button type="button" data-memo-color="'+color+'" style="background:'+color+'" aria-label="메모 글자색 '+MEMO_TEXT_COLOR_NAMES[i]+'" aria-pressed="false"></button>').join('');
-$('#memo-paper-colors').innerHTML = MEMO_PAPERS.map(([color,name])=>'<button type="button" data-memo-paper="'+color+'" style="background:'+color+'" aria-label="메모 배경 '+name+'" aria-pressed="false"></button>').join('');
+$('#memo-text-colors').innerHTML=MEMO_TEXT_COLORS.map((color,i)=>'<button type="button" data-memo-color="'+color+'" style="background:'+color+'" aria-label="메모 글자색 '+MEMO_TEXT_COLOR_NAMES[i]+'" aria-pressed="false"></button>').join('');
+$('#memo-paper-colors').innerHTML=MEMO_PAPERS.map(([color,name])=>'<button type="button" data-memo-paper="'+color+'" style="background:'+color+'" aria-label="메모 배경 '+name+'" aria-pressed="false"></button>').join('');
 $('#memo-inspector').addEventListener('click',e=>{
-  const button=e.target.closest('button');if(!button)return;
-  if(button.dataset.memoColor)updateMemoProperty('textColor',button.dataset.memoColor,true);
-  if(button.dataset.memoPaper)updateMemoProperty('paper',button.dataset.memoPaper,true);
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.memoColor)updateMemoProperty('textColor',b.dataset.memoColor,true);
+  if(b.dataset.memoPaper)updateMemoProperty('paper',b.dataset.memoPaper,true);
 });
 $('#memo-bold').addEventListener('click',()=>updateMemoProperty('bold',!inspectorModel().bold,true));
+$('#memo-smaller').addEventListener('click',()=>updateMemoProperty('fs',inspectorModel().fs-1,true));
+$('#memo-larger').addEventListener('click',()=>updateMemoProperty('fs',inspectorModel().fs+1,true));
 $('#memo-delete').addEventListener('click',()=>{const a=selAnn();if(a?.type==='memo')delAnn(a.id);});
-$('#memo-add').addEventListener('click',()=>{
-  const current=inspectorModel();
-  if(current!==memoDraft)for(const prop of Object.keys(memoDraft))memoDraft[prop]=current[prop];
-  S.sel=null;renderAnn();renderList();setTool('memo');
-  if(innerWidth<=760){document.body.classList.remove('sidebar-open');updateSidebarButton();}
+let opacityChanged=false;
+$('#memo-transparency').addEventListener('focus',()=>{opacityChanged=false;});
+$('#memo-transparency').addEventListener('pointerdown',()=>{opacityChanged=false;});
+$('#memo-transparency').addEventListener('input',e=>{updateMemoProperty('paperOpacity',1-Number(e.target.value)/100,!opacityChanged);opacityChanged=true;});
+$('#memo-transparency').addEventListener('blur',()=>{opacityChanged=false;});
+const memoFontList=$('#memo-font-list');
+const memoFontObserver=new IntersectionObserver(entries=>{
+  for(const entry of entries){if(!entry.isIntersecting)continue;const row=entry.target,font=row.dataset.font;
+    row.style.fontFamily=font?'"'+font+'",'+FONT:FONT;row.setAttribute('aria-busy','true');
+    const loading=font?document.fonts.load('17px "'+font+'"','가나다 ABC'):Promise.resolve([]);
+    loading.then(()=>{row.dataset.fontReady='true';row.setAttribute('aria-busy','false');}).catch(()=>{row.setAttribute('aria-busy','false');});memoFontObserver.unobserve(row);
+  }
+},{root:memoFontList,rootMargin:'30px 0px'});
+for(const font of [{name:'Workroom Sans',value:''},...MEMO_FONTS.filter(font=>font.value!=='Pretendard')]){
+  const row=document.createElement('button');row.type='button';row.className='font-option'+(/^(Nanum|Ongeulip|Insungit)/.test(font.value)?' handwriting':'');row.dataset.font=font.value;row.setAttribute('role','option');row.setAttribute('aria-selected','false');row.tabIndex=-1;
+  row.innerHTML='<span class="font-option-name">'+esc(font.name.replace(' · 가나다 ABC',''))+'</span><span class="font-option-sample">가나다 ABC · 반가워요</span>';
+  row.addEventListener('click',()=>{updateMemoProperty('font',font.value,true);$('#memo-font-menu').hidePopover();$('#memo-font').focus();});
+  memoFontList.append(row);memoFontObserver.observe(row);
+}
+$('#memo-font-search').addEventListener('input',e=>{
+  const query=e.target.value.trim().toLowerCase();let matches=0;
+  memoFontList.querySelectorAll('.font-option').forEach(row=>{row.hidden=!row.querySelector('.font-option-name').textContent.toLowerCase().includes(query);if(!row.hidden)matches++;});
+  $('#memo-font-empty').hidden=matches>0;memoFontList.scrollTop=0;
 });
+$('#memo-font-menu').addEventListener('beforetoggle',event=>{
+  if(event.newState!=='open')return;
+  const r=$('#memo-font').getBoundingClientRect(),width=Math.min(320,innerWidth-24),height=Math.min(350,innerHeight-24),below=innerHeight-r.bottom-10;
+  Object.assign($('#memo-font-menu').style,{left:Math.max(8,Math.min(innerWidth-width-8,r.left))+'px',top:(below>=Math.min(height,220)?r.bottom+6:Math.max(8,r.top-height-6))+'px',height:Math.min(height,below>=220?below:height)+'px'});
+  $('#memo-font-search').value='';memoFontList.querySelectorAll('.font-option').forEach(row=>{row.hidden=false;});$('#memo-font-empty').hidden=true;
+});
+$('#memo-font-menu').addEventListener('toggle',()=>{
+  const open=$('#memo-font-menu').matches(':popover-open');$('#memo-font').setAttribute('aria-expanded',String(open));if(open)$('#memo-font-search').focus();
+});
+$('#memo-font-menu').addEventListener('keydown',e=>{
+  if(!['ArrowDown','ArrowUp','Home','End'].includes(e.key))return;
+  const rows=[...memoFontList.querySelectorAll('.font-option')].filter(row=>!row.hidden);if(!rows.length)return;
+  const current=rows.indexOf(document.activeElement),index=e.key==='Home'?0:e.key==='End'?rows.length-1:e.key==='ArrowDown'?Math.min(rows.length-1,current+1):Math.max(0,current-1);
+  e.preventDefault();rows[index].focus();rows[index].scrollIntoView({block:'nearest'});
+});
+window.addEventListener('resize',()=>{if($('#memo-font-menu').matches(':popover-open'))$('#memo-font-menu').hidePopover();});
+
 function updateSidebarButton(){
   const open=innerWidth<=760 ? document.body.classList.contains('sidebar-open') : !document.body.classList.contains('sidebar-hidden');
   $('#toggle-sidebar').setAttribute('aria-expanded',String(open));
-  $('#toggle-sidebar').textContent=open?'패널 닫기':'편집 패널';
+  $('#toggle-sidebar').setAttribute('aria-label',open?'패널 닫기':'패널 열기');
+  $('#toggle-sidebar').title=open?'패널 닫기':'패널 열기';
+  $('#toggle-sidebar').classList.toggle('is-open',open);
+  if(!open&&$('#memo-font-menu').matches(':popover-open'))$('#memo-font-menu').hidePopover();
 }
 $('#toggle-sidebar').addEventListener('click',()=>{
   document.body.classList.toggle(innerWidth<=760?'sidebar-open':'sidebar-hidden');updateSidebarButton();
@@ -596,18 +636,28 @@ function hexRgba(hex, alpha) { const n = parseInt(hex.slice(1), 16); return 'rgb
 COLORS.forEach((c, i) => {
   const b = document.createElement('button');
   b.className = 'sw' + (i === 0 ? ' on' : ''); b.style.background = c.hex; b.title = c.name + ' 형광펜';
-  b.addEventListener('click', () => setColor(i));
+  b.setAttribute('aria-label', b.title); b.setAttribute('aria-pressed', String(i === 0));
+  b.addEventListener('click', () => { setColor(i); $('#colors').hidePopover(); });
   $('#colors').appendChild(b);
 });
-function setColorUI() { [...$('#colors').children].forEach((b, k) => b.classList.toggle('on', k === S.color)); }
+function setColorUI() { [...$('#colors').children].forEach((b, k) => { b.classList.toggle('on', k === S.color); b.setAttribute('aria-pressed',String(k === S.color)); }); }
+$('#colors').addEventListener('beforetoggle', event => {
+  if (event.newState !== 'open') return;
+  const trigger = $('#tools [data-t="hl"]').getBoundingClientRect();
+  $('#colors').style.left = Math.max(8,Math.min(innerWidth - 150,trigger.left)) + 'px';
+  $('#colors').style.top = (trigger.bottom + 8) + 'px';
+});
+$('#colors').addEventListener('toggle', () => $('#tools [data-t="hl"]').setAttribute('aria-expanded',String($('#colors').matches(':popover-open'))));
+window.addEventListener('resize', () => { if ($('#colors').matches(':popover-open')) $('#colors').hidePopover(); });
 function setColor(i) {
   S.color = i;
   setColorUI();
   const a = selAnn();
-  if (a) { pushUndo(); a.color = i; if (a.type === 'hl') { const m = memoOf(a); if (m) m.color = i; } changed(); }
+  if (a?.type === 'hl') { pushUndo(); a.color = i; const m = memoOf(a); if (m) m.color = i; changed(); }
 }
 function setTool(t) {
-  cancelTextDrag();
+  cancelTextDrag(); cancelMemoDraw();
+  if(t==='memo'){S.sel=null;renderAnn();renderList();}
   S.tool = t;
   [...$('#tools').children].forEach((b) => b.classList.toggle('on', b.dataset.t === t));
   S.pages.forEach((p) => {
@@ -617,12 +667,8 @@ function setTool(t) {
     p.text.classList.toggle('on', t === 'hl');       // 형광펜일 때만 글자를 끌어서 선택
   });
   syncMemoInspector(); syncStickerPanel();
-  if(t==='memo'){
-    document.body.classList.remove('sidebar-hidden');
-    if(innerWidth<=760)document.body.classList.add('sidebar-open');
-    updateSidebarButton();
-  }
-  if (t !== 'hl') hideSelPop();
+  if(t==='memo'&&innerWidth<=760){document.body.classList.remove('sidebar-open');updateSidebarButton();}
+  if (t !== 'hl') { hideSelPop(); if ($('#colors').matches(':popover-open')) $('#colors').hidePopover(); }
 }
 $('#tools').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setTool(b.dataset.t); });
 $('#zin').addEventListener('click', () => setScale(S.scale * 1.15));
@@ -860,7 +906,8 @@ function addMemo(P, x, y, text, anchor, color) {
   clampMemo(P, m); S.ann.push(m); return m;
 }
 function clampMemo(P, m) {
-  if (!m.h) m.h = 86;
+  if (!m.h) m.h = 60;
+  m.w = Math.max(36,Math.min(P.w-4,m.w)); m.h = Math.max(24,Math.min(P.h-4,m.h));
   m.x = Math.max(2, Math.min(P.w - m.w - 2, m.x));
   m.y = Math.max(2, Math.min(P.h - m.h - 2, m.y));
 }
@@ -891,25 +938,26 @@ function pencilStroke(c, points, color, closed, hatch){
     c.save();trace(0,0,0);c.clip();c.globalAlpha=.18;c.lineWidth=W*.008;
     for(let y=-W;y<W*2;y+=W*.028){c.beginPath();c.moveTo(0,y);c.lineTo(W,y+W*.52);c.stroke();}c.restore();
   }
-  for(let pass=0;pass<17;pass++){
-    const spread=W*.024,dx=(rand()-.5)*spread,dy=(rand()-.5)*spread;
-    trace(dx,dy,W*.006);c.globalAlpha=pass<3?.14:.25;c.lineWidth=W*(pass<3?.032:.007+rand()*.006);c.stroke();
+  for(let pass=0;pass<25;pass++){
+    const spread=W*.041,dx=(rand()-.5)*spread,dy=(rand()-.5)*spread;
+    trace(dx,dy,W*.007);c.globalAlpha=pass<3?.22:.64;c.lineWidth=W*(pass<3?.047:.0028+rand()*.003);c.stroke();
   }
   // Tiny gaps in the pigment expose the paper, like a colored pencil on grain.
   c.save();c.globalCompositeOperation='destination-out';
-  for(let i=0;i<4200;i++){c.globalAlpha=.18+rand()*.5;c.fillRect(rand()*W,rand()*c.canvas.height,.4+rand()*1.2,.4+rand()*1.2);}
+  for(let i=0;i<6800;i++){c.globalAlpha=.25+rand()*.55;c.fillRect(rand()*W,rand()*c.canvas.height,.45+rand()*1.65,.45+rand()*1.65);}
   c.restore();c.globalAlpha=1;
 }
 function pencilShape(c,w,h,key,color){
   let points=[],closed=false,hatch=false;
-  if(key==='check')points=[[.16,.52],[.28,.64],[.4,.76],[.57,.51],[.85,.2]];
+  if(key==='check')points=[[.15,.49],[.27,.64],[.4,.77],[.59,.49],[.85,.19]];
   else if(key==='x'){
     pencilStroke(c,[[.2*w,.2*h],[.48*w,.49*h],[.8*w,.81*h]],color,false,false);
     points=[[.81,.19],[.54,.48],[.19,.81]];
   }else if(key==='circle'){
     for(let i=0;i<82;i++){const t=-.18+i/81*Math.PI*2;points.push([.5+Math.cos(t)*(.374+Math.sin(t*3)*.009),.5+Math.sin(t)*(.356+Math.cos(t*2)*.012)]);}closed=true;
   }else if(key==='star'){
-    for(let i=0;i<10;i++){const t=-Math.PI/2+i*Math.PI/5,r=i%2?.19:.42;points.push([.5+Math.cos(t)*r,.5+Math.sin(t)*r]);}closed=true;hatch=true;
+    // A single continuous pentagram stroke, with a small handwritten overshoot.
+    points=[[.50,.10],[.76,.86],[.10,.37],[.91,.36],[.24,.86],[.50,.10],[.505,.08]];
   }else{
     const direction=key.replace('arrow-','');
     const transform=([x,y])=>direction==='left'?[1-x,y]:direction==='up'?[y,1-x]:direction==='down'?[y,x]:[x,y];
@@ -1147,22 +1195,22 @@ function renderAnn() {
       dragSticker(d, a, P);
     } else {
       const m = document.createElement('div');
-      m.className = 'memo' + (S.sel === a.id ? ' on' : ''); m.dataset.id = a.id;
+      m.className = 'memo' + (memoOpacity(a) === 0 ? ' clear-paper' : '') + (S.sel === a.id ? ' on' : ''); m.dataset.id = a.id;
       if (!a.h) a.h = 86; if (!a.fs) a.fs = MEMO_FS; if (!a.textColor) a.textColor = MEMO_TEXT_COLORS[0]; if (a.font == null) a.font = '';
       const paper = c.paper || c.hex;
-      Object.assign(m.style, { left: a.x * k + 'px', top: a.y * k + 'px', width: a.w * k + 'px', height: a.h * k + 'px', background: a.paper || '#ffffff' });
-      m.innerHTML = '<div class="dragzone" title="끌어서 메모 이동"><span class="movegrip">✥</span> 이동</div>' +
-        '<textarea spellcheck="false" placeholder="메모 입력" aria-label="문서 메모"></textarea><span class="mrz" title="끌어서 크기 조절"></span>';
+      Object.assign(m.style, { left: a.x * k + 'px', top: a.y * k + 'px', width: a.w * k + 'px', height: a.h * k + 'px', background: hexRgba(a.paper || '#ffffff',memoOpacity(a)) });
+      m.innerHTML = '<div class="dragzone" title="드래그하여 이동"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18m-12-6 3-3 3 3m-6 12 3 3 3-3M6 9l-3 3 3 3m12-6 3 3-3 3"/></svg></div>' +
+        '<textarea spellcheck="false" placeholder="메모 입력" aria-label="문서 메모"></textarea>' + ['n','ne','e','se','s','sw','w','nw'].map(edge=>'<span class="memo-resize" data-edge="'+edge+'" title="드래그하여 크기 조절"></span>').join('');
       const ta = m.querySelector('textarea');
       ta.value = a.text;
-      Object.assign(ta.style, { fontSize: a.fs * k + 'px', lineHeight: a.fs * 1.42 * k + 'px', fontFamily: a.font ? '"' + a.font + '",' + FONT : FONT, fontWeight: a.bold ? '700' : '400', color: a.textColor });
+      Object.assign(ta.style, { fontSize: a.fs * k + 'px', lineHeight: a.fs * 1.42 * k + 'px', padding: 6 * k + 'px', fontFamily: a.font ? '"' + a.font + '",' + FONT : FONT, fontWeight: a.bold ? '700' : '400', color: a.textColor });
       P.layer.appendChild(m);
       let pushed = false;
       ta.addEventListener('focus', () => { pushed = false; if (S.sel !== a.id) setTimeout(() => select(a.id, true), 0); });
       ta.addEventListener('input', () => { if (!pushed) { pushUndo(); pushed = true; } a.text = ta.value; S.dirty = true; drawLines(P); renderList(); syncMemoInspector(); });
       ta.addEventListener('pointerdown', (e) => e.stopPropagation());
       dragMemo(m.querySelector('.dragzone'), a, P, m);
-      resizeMemo(m.querySelector('.mrz'), a, P, m);
+      m.querySelectorAll('.memo-resize').forEach(handle=>resizeMemo(handle,a,P,m));
     }
   }
   S.pages.forEach(drawLines);
@@ -1218,23 +1266,46 @@ function dragMemo(handle, a, P, el) {
     document.addEventListener('pointermove', mv); document.addEventListener('pointerup', up); document.addEventListener('pointercancel', up);
   });
 }
-function resizeMemo(handle, a, P, el) {
-  handle.addEventListener('pointerdown', (e) => {
-    e.preventDefault(); e.stopPropagation();
-    const k = S.scale, sx = e.clientX, sy = e.clientY, ow = a.w, oh = a.h || 86;
-    let moved = false; handle.setPointerCapture(e.pointerId);
-    const mv = (ev) => {
-      const dx = (ev.clientX - sx) / k, dy = (ev.clientY - sy) / k;
-      if (!moved && Math.hypot(dx, dy) > 2) { moved = true; pushUndo(); }
-      if (!moved) return;
-      a.w = Math.max(90, Math.min(P.w - a.x - 2, ow + dx));
-      a.h = Math.max(55, Math.min(P.h - a.y - 2, oh + dy));
-      Object.assign(el.style, { width: a.w * k + 'px', height: a.h * k + 'px' }); drawLines(P);
+let memoDrawCancel=null;
+function cancelMemoDraw(){if(memoDrawCancel)memoDrawCancel();}
+function beginMemoDraw(P,e){
+  const r=P.el.getBoundingClientRect(),k=S.scale;
+  const start={x:Math.max(2,Math.min(P.w-2,(e.clientX-r.left)/k)),y:Math.max(2,Math.min(P.h-2,(e.clientY-r.top)/k))};
+  let end={...start},dragged=false;
+  const draft=document.createElement('div');draft.className='memo-draft';P.layer.appendChild(draft);P.el.setPointerCapture(e.pointerId);
+  const move=event=>{
+    end={x:Math.max(2,Math.min(P.w-2,(event.clientX-r.left)/k)),y:Math.max(2,Math.min(P.h-2,(event.clientY-r.top)/k))};
+    if(Math.hypot(end.x-start.x,end.y-start.y)*k>4)dragged=true;
+    Object.assign(draft.style,{left:Math.min(start.x,end.x)*k+'px',top:Math.min(start.y,end.y)*k+'px',width:Math.abs(end.x-start.x)*k+'px',height:Math.abs(end.y-start.y)*k+'px'});
+  };
+  const cleanup=()=>{draft.remove();P.el.removeEventListener('pointermove',move);P.el.removeEventListener('pointerup',finish);P.el.removeEventListener('pointercancel',cleanup);memoDrawCancel=null;};
+  const finish=event=>{
+    move(event);cleanup();pushUndo();
+    const m=addMemo(P,dragged?Math.min(start.x,end.x):start.x,dragged?Math.min(start.y,end.y):start.y,'',null);
+    if(dragged){m.w=Math.max(36,Math.abs(end.x-start.x));m.h=Math.max(24,Math.abs(end.y-start.y));clampMemo(P,m);}
+    S.dirty=true;setTool('sel');select(m.id,true);
+  };
+  memoDrawCancel=cleanup;P.el.addEventListener('pointermove',move);P.el.addEventListener('pointerup',finish);P.el.addEventListener('pointercancel',cleanup);
+}
+function resizeMemo(handle,a,P,el){
+  handle.addEventListener('pointerdown',e=>{
+    if(e.button!==0)return;e.preventDefault();e.stopPropagation();
+    const edge=handle.dataset.edge,k=S.scale,sx=e.clientX,sy=e.clientY,o={x:a.x,y:a.y,w:a.w,h:a.h};
+    let moved=false;handle.setPointerCapture(e.pointerId);
+    const move=event=>{
+      const dx=(event.clientX-sx)/k,dy=(event.clientY-sy)/k;
+      if(!moved&&Math.hypot(dx,dy)>1){pushUndo();moved=true;}if(!moved)return;
+      if(edge.includes('w')){a.x=Math.max(2,Math.min(o.x+o.w-36,o.x+dx));a.w=o.x+o.w-a.x;}
+      if(edge.includes('e'))a.w=Math.max(36,Math.min(P.w-o.x-2,o.w+dx));
+      if(edge.includes('n')){a.y=Math.max(2,Math.min(o.y+o.h-24,o.y+dy));a.h=o.y+o.h-a.y;}
+      if(edge.includes('s'))a.h=Math.max(24,Math.min(P.h-o.y-2,o.h+dy));
+      Object.assign(el.style,{left:a.x*k+'px',top:a.y*k+'px',width:a.w*k+'px',height:a.h*k+'px'});drawLines(P);
     };
-    const up = () => { handle.removeEventListener('pointermove', mv); handle.removeEventListener('pointerup', up); if (moved) { S.dirty = true; renderList(); syncMemoInspector(); } };
-    handle.addEventListener('pointermove', mv); handle.addEventListener('pointerup', up);
+    const finish=()=>{handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',finish);handle.removeEventListener('pointercancel',finish);if(moved){S.dirty=true;renderList();syncMemoInspector();}};
+    handle.addEventListener('pointermove',move);handle.addEventListener('pointerup',finish);handle.addEventListener('pointercancel',finish);
   });
 }
+
 function delAnn(id) {
   const a = annById(id); if (!a) return;
   pushUndo();
@@ -1255,9 +1326,7 @@ function bindPage(P) {
     if (hit && S.tool !== 'memo' && S.tool !== 'stk') { e.preventDefault(); select(hit.dataset.id); return; }
     if (S.tool === 'sel') { if (S.sel) { S.sel = null; renderAnn(); renderList(); } return; }
     if (S.tool === 'memo') {
-      e.preventDefault(); pushUndo();
-      const m = addMemo(P, px, py - 6, '', null);
-      S.dirty = true; select(m.id, true); setTool('sel'); return;
+      e.preventDefault(); beginMemoDraw(P,e); return;
     }
     if (S.tool === 'stk') {
       e.preventDefault();
@@ -1478,7 +1547,7 @@ document.addEventListener('copy', (e) => {
     e.clipboardData.setData('text/plain', pend.txt); e.preventDefault();
   }
 });
-window.addEventListener('blur', () => { cancelTextDrag(); hideSelPop(); });
+window.addEventListener('blur', () => { cancelMemoDraw(); cancelTextDrag(); hideSelPop(); });
 window.addEventListener('resize', () => { cancelTextDrag(); hideSelPop(); });
 /* 키보드 */
 document.addEventListener('keydown', (e) => {
@@ -1487,7 +1556,7 @@ document.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y' && !typing) { e.preventDefault(); redo(); return; }
   if (typing) { if (e.key === 'Escape') document.activeElement.blur(); return; }
   if (e.key === 'Delete' || e.key === 'Backspace') { if (S.sel) { e.preventDefault(); delAnn(S.sel); } }
-  else if (e.key === 'Escape') { cancelTextDrag(); hideSelPop(); S.sel = null; renderAnn(); renderList(); }
+  else if (e.key === 'Escape') { cancelMemoDraw(); cancelTextDrag(); hideSelPop(); S.sel = null; renderAnn(); renderList(); }
   else if (e.key === 'v' || e.key === 'V') setTool('sel');
   else if (e.key === 'h' || e.key === 'H') setTool('hl');
   else if (e.key === 'a' || e.key === 'A') setTool('area');
@@ -1672,19 +1741,19 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 /* 메모 상자 → 그림 (한글 글꼴을 PDF에 넣지 않아도 되도록) */
 function memoImage(m) {
-  const K = 4, pad = 9, fs = m.fs || MEMO_FS, lh = fs * 1.42, hpt = m.h || 86;
+  const K = 4, pad = 6, fs = m.fs || MEMO_FS, lh = fs * 1.42, hpt = m.h || 60;
   const c = COLORS[m.color] || COLORS[0];
   const cv = document.createElement('canvas'); const ctx = cv.getContext('2d');
   const memoFont = m.font ? '"' + m.font + '",' + FONT : FONT;
   ctx.font = (m.bold ? '700 ' : '400 ') + fs * K + 'px ' + memoFont;
   const lines = wrap(ctx, m.text || '', (m.w - pad * 2) * K);
   cv.width = Math.ceil(m.w * K); cv.height = Math.ceil(hpt * K);
-  ctx.fillStyle = m.paper || '#ffffff'; roundRect(ctx, 1, 1, cv.width - 2, cv.height - 2, 3 * K); ctx.fill();
-  ctx.strokeStyle = 'rgba(60,60,67,.18)'; ctx.lineWidth = .75 * K; roundRect(ctx, 1.5 * K, 1.5 * K, cv.width - 3 * K, cv.height - 3 * K, 3 * K); ctx.stroke();
-  const top = 7;
+  const opacity=memoOpacity(m);
+  if(opacity>0){ctx.fillStyle=hexRgba(m.paper||'#ffffff',opacity);roundRect(ctx,1,1,cv.width-2,cv.height-2,2*K);ctx.fill();}
+  const top = pad;
   ctx.fillStyle = m.textColor || MEMO_TEXT_COLORS[0]; ctx.font = (m.bold ? '700 ' : '400 ') + fs * K + 'px ' + memoFont; ctx.textBaseline = 'alphabetic';
-  const maxLines = Math.max(1, Math.floor((hpt - top - 6) / lh));
-  lines.slice(0, maxLines).forEach((ln, i) => ctx.fillText(ln, pad * K, (top + lh * (i + 1) - 3) * K));
+  const maxLines = Math.max(1, Math.floor((hpt - pad * 2) / lh));
+  lines.slice(0, maxLines).forEach((ln, i) => ctx.fillText(ln, pad * K, (top + fs + lh * i) * K));
   return { png: canvasPng(cv), h: hpt };
 }
 function pdfRect(P, a) {
