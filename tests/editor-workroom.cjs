@@ -1,0 +1,94 @@
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
+const {chromium}=require('playwright');
+const work=path.resolve(__dirname,'..'),root=work,live=false;
+const output=path.join(root,'tmp','editor-workroom-qa');fs.mkdirSync(output,{recursive:true});
+(async()=>{
+ let context,server;const errors=[],failed=[],counter=[];
+ try{
+  let base='https://minovation-tf.github.io/';
+  if(!live){server=http.createServer((req,res)=>{
+   const u=new URL(req.url,'http://localhost'),home=u.pathname.startsWith('/meritz-workroom/'),directory=home?work:root;
+   const relative=decodeURIComponent(u.pathname.replace(/^\/(meritz-workroom|pdf-editor)\//,'')),p=path.resolve(directory,relative||'index.html');
+   if(!p.startsWith(directory+path.sep)||!fs.existsSync(p)||!fs.statSync(p).isFile())return res.writeHead(404).end();
+   const type={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.woff2':'font/woff2','.png':'image/png','.ttf':'font/ttf','.otf':'font/otf','.pdf':'application/pdf'}[path.extname(p)]||'application/octet-stream';
+   res.writeHead(200,{'Content-Type':type});fs.createReadStream(p).pipe(res);
+  });await new Promise(r=>server.listen(0,'127.0.0.1',r));base=`http://127.0.0.1:${server.address().port}/`;}
+  context=await chromium.launchPersistentContext(path.join(output,'browser'),{channel:'msedge',headless:true,viewport:{width:1440,height:1000},acceptDownloads:true});
+  context.setDefaultTimeout(30000);context.setDefaultNavigationTimeout(60000);
+  await context.route('https://pdf-editor-counter.espresso311.workers.dev/**',route=>{counter.push(route.request().method()+' '+new URL(route.request().url()).pathname);return route.fulfill({contentType:'application/json',headers:{'Access-Control-Allow-Origin':'*'},body:JSON.stringify({today:12,total:1194})});});
+  await context.route('https://static.cloudflareinsights.com/**',r=>r.fulfill({body:''}));
+  const page=await context.newPage();
+  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.url().startsWith(base)&&r.status()>=400)failed.push([r.status(),r.url()]);});
+  await page.goto(base+'pdf-editor/pdf-editor.html');
+  await page.waitForFunction(()=>!!window.__tool);await page.evaluate(()=>document.fonts.ready);
+  assert.equal(await page.locator('#home-link').getAttribute('href'),'https://minovation-tf.github.io/meritz-workroom/');
+  assert.equal(await page.locator('#visitstat').count(),0);assert.deepEqual(counter,[]);
+  assert.equal(await page.locator('#phrases .emptyline').count(),0);
+  assert.equal(await page.locator('#brandci').getAttribute('aria-label'),'meritz');
+  for(const width of [1440,1242,920,760,390,320]){
+   await page.setViewportSize({width,height:800});
+   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Page overflows at '+width);
+   assert(await page.locator('header').evaluate(el=>el.scrollWidth<=el.clientWidth),'Toolbar overflows at '+width);
+   const toolSizes=await page.locator('#tools button').evaluateAll(es=>es.map(e=>({w:e.clientWidth,h:e.clientHeight,ws:getComputedStyle(e).whiteSpace})));
+   assert(toolSizes.every(e=>e.w>35&&e.h<50&&e.ws==='nowrap'),JSON.stringify({width,toolSizes}));
+   await page.screenshot({path:path.join(output,`empty-${width}.png`)});
+  }
+  await page.setViewportSize({width:1440,height:1000});
+  await page.locator('#file').setInputFiles(path.join(work,'tmp/selection-qa/fixture.pdf'));
+  await page.waitForFunction(()=>window.__tool.S.pages.length===5&&!document.querySelector('#save').disabled);
+  await page.locator('#tools [data-t="memo"]').click();
+  await page.locator('#memo-text').fill('김미노 상담 메모\n필요한 보장을 확인하세요');
+  await page.locator('#memo-size').fill('16');await page.locator('#memo-size').press('Tab');
+  await page.locator('#memo-width').fill('210');await page.locator('#memo-width').press('Tab');
+  await page.locator('#memo-height').fill('115');await page.locator('#memo-height').press('Tab');
+  const point=async(x,y)=>page.evaluate(({x,y})=>{const S=window.__tool.S,r=S.pages[0].el.getBoundingClientRect();return{x:r.left+x*S.scale,y:r.top+y*S.scale};},{x,y});
+  let p=await point(310,270);await page.mouse.click(p.x,p.y);
+  await page.locator('.memo.on textarea').waitFor();
+  let memo=await page.evaluate(()=>window.__tool.S.ann.find(a=>a.type==='memo'));
+  assert.equal(memo.text,'김미노 상담 메모\n필요한 보장을 확인하세요');assert.equal(memo.fs,16);assert.equal(memo.w,210);assert.equal(memo.h,115);
+  await page.locator('#memo-text').fill('왼쪽 패널에서 수정');
+  assert.equal(await page.locator('.memo.on textarea').inputValue(),'왼쪽 패널에서 수정');
+  await page.locator('.memo.on textarea').fill('문서에서 직접 수정');
+  assert.equal(await page.locator('#memo-text').inputValue(),'문서에서 직접 수정');
+  await page.locator('#memo-size').fill('21');await page.locator('#memo-size').press('Tab');
+  await page.locator('#memo-height').fill('145');await page.locator('#memo-height').press('Tab');
+  await page.locator('[data-memo-paper="#fff4c8"]').click();
+  await page.locator('[data-memo-color="#1971C2"]').click();
+  await page.locator('#memo-bold').click();
+  assert.equal(await page.evaluate(()=>window.__tool.S.ann.find(a=>a.type==='memo').bold),true);
+  await page.locator('#undo').click();assert.equal(await page.evaluate(()=>window.__tool.S.ann.find(a=>a.type==='memo').bold),false);
+  await page.locator('#redo').click();assert.equal(await page.evaluate(()=>window.__tool.S.ann.find(a=>a.type==='memo').bold),true);
+  await page.screenshot({path:path.join(output,'memo-desktop.png')});
+  await page.locator('#tools [data-t="stk"]').click();
+  assert.equal(await page.locator('#stkcolors button').count(),5);
+  assert.equal(await page.locator('#stk .stkpick').count(),8);
+  await page.locator('#stk .stkpick[aria-label="중요 · 별"]').click();
+  await page.locator('[data-sticker-color="blue"]').click();
+  p=await point(200,320);await page.mouse.click(p.x,p.y);
+  await page.locator('.sticker.on').waitFor();
+  assert.equal(await page.evaluate(()=>window.__tool.S.ann.find(a=>a.type==='stk').src),'b:star:blue');
+  await page.locator('[data-sticker-color="green"]').click();
+  assert.equal(await page.evaluate(()=>window.__tool.S.ann.find(a=>a.type==='stk').src),'b:star:green');
+  await page.screenshot({path:path.join(output,'sticker-desktop.png')});
+  const pencil=await page.locator('.sticker.on img').evaluate(async img=>{await img.decode();const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;const x=c.getContext('2d');x.drawImage(img,0,0);const p=x.getImageData(0,0,c.width,c.height).data;let textured=0,green=0;for(let i=0;i<p.length;i+=4){if(p[i+3]>0&&p[i+3]<230)textured++;if(p[i+3]>60&&p[i+1]>p[i]+20&&p[i+1]>p[i+2]+10)green++;}return{width:c.width,textured,green};});
+  assert(pencil.textured>500&&pencil.green>500,JSON.stringify(pencil));
+  const rendered=await page.evaluate(async()=>{
+   await document.fonts.ready;const bytes=await window.__tool.buildMarkedPdf();
+   const doc=await pdfjsLib.getDocument({data:bytes.slice(0),useSystemFonts:true}).promise,pg=await doc.getPage(1),vp=pg.getViewport({scale:1.5}),c=document.createElement('canvas');c.width=Math.ceil(vp.width);c.height=Math.ceil(vp.height);await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+   const result={pages:doc.numPages,png:c.toDataURL('image/png'),size:bytes.length};await doc.destroy();return result;
+  });
+  assert.equal(rendered.pages,5);assert(rendered.size>5000);fs.writeFileSync(path.join(output,'export-page-1.png'),Buffer.from(rendered.png.split(',')[1],'base64'));
+  const download=page.waitForEvent('download');await page.locator('#save').click();await(await download).saveAs(path.join(output,'marked.pdf'));
+  await page.locator('#stkclose').click();
+  await page.setViewportSize({width:920,height:668});await page.screenshot({path:path.join(output,'loaded-920.png')});
+  await page.locator('#tools [data-t="memo"]').click();await page.setViewportSize({width:390,height:844});
+  await page.locator('#toggle-sidebar').click();
+  assert(await page.locator('#sidebar').isVisible());
+  await page.screenshot({path:path.join(output,'memo-mobile.png')});
+  await page.locator('#toggle-sidebar').click();
+  await page.locator('#tools [data-t="stk"]').click();await page.screenshot({path:path.join(output,'sticker-mobile.png')});
+  assert(await page.locator('#stkbar').evaluate(el=>el.scrollWidth<=el.clientWidth));
+  assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
+  console.log(JSON.stringify({result:'passed',live,pages:rendered.pages,pencil,counter,checks:['unbroken toolbar at 1440/1242/920/760/390/320','WORKROOM home link','compact search and empty phrases','memo draft and two-way text editing','memo font/size/box/color/undo/redo','textured pencil sticker shapes and colors','PDF rendering and download','mobile inspector and stickers','no editor visits','no errors or missing assets']}));
+ }finally{if(context)await context.close();if(server)await new Promise(r=>server.close(r));}
+})().catch(e=>{console.error(e);process.exitCode=1;});

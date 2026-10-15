@@ -4,8 +4,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PDF Editor</title>
-<script src="config.js"></script>
+<title>WORKROOM · PDF Editor</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M5 5h22v22H5Zm11 0v22m0-11h11' fill='none' stroke='%23171717' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preload" href="assets/fonts/WorkroomSans.woff2" as="font" type="font/woff2" crossorigin>
+
 <script>
 if (/MSIE |Trident\//.test(navigator.userAgent)) {
   document.write('<p style="padding:40px;font-size:16px;font-family:sans-serif">이 도구는 Microsoft Edge 또는 Chrome에서 열어 주세요.</p>');
@@ -265,53 +267,49 @@ body.dragging .card{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent
 body.stk-on #toast{bottom:152px}
 @media (max-width:900px){ main{grid-template-columns:1fr} aside{display:none} #brandci{width:150px;right:14px;bottom:14px} }
 </style>
+<link rel="stylesheet" href="assets/editor.css">
 </head>
 <body>
 <div id="app">
-<header>
-  <div class="brand">PDF Editor<small>세일즈혁신TF</small></div>
-  <label class="btn" for="file">PDF 열기</label>
-  <input id="file" type="file" accept="application/pdf,.pdf" hidden>
-  <span class="fname" id="fname"></span>
-  <span class="sep"></span>
-  <div class="seg" id="tools" title="도구 (V · H · A · M · S)">
-    <button data-t="sel">선택</button><button data-t="hl" class="on">형광펜</button><button data-t="area">영역</button><button data-t="memo">메모</button><button data-t="stk">스티커</button>
+<header class="editor-header">
+  <div class="header-primary">
+    <a class="workroom-home" id="home-link" href="https://minovation-tf.github.io/meritz-workroom/" aria-label="WORKROOM 홈으로 돌아가기" title="홈으로 돌아가기"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="2" y="2" width="24" height="24"/><path d="M14 2v24m0-12h12"/></svg><span>WORKROOM<span class="period">.</span></span><span class="home-caption">홈으로</span></a>
+    <span class="editor-label">PDF Editor</span>
+    <label class="btn ghost" for="file" tabindex="0" role="button" id="open-file-button">PDF 열기</label>
+    <input id="file" type="file" accept="application/pdf,.pdf" hidden>
+    <span class="fname" id="fname"></span>
+    <button class="btn ghost" id="toggle-sidebar" type="button" aria-expanded="true" aria-controls="sidebar">패널 닫기</button>
+    <div class="savegrp"><div class="seg savefmt" aria-label="저장 파일 형식"><label><input type="radio" name="fmt" value="pdf" checked><span>PDF</span></label><label><input type="radio" name="fmt" value="jpg"><span>JPG</span></label></div><button class="btn primary" id="save" disabled>표시본 저장</button></div>
   </div>
-  <div class="grp" id="colors"></div>
-  <span class="sep"></span>
-  <div class="grp">
-    <span class="stepper"><button id="zout" title="축소">−</button><span id="zoomv">100%</span><button id="zin" title="확대">+</button></span>
-    <button class="btn ghost" id="zfit">폭 맞춤</button>
-    <button class="btn ghost" id="zpage">쪽 맞춤</button>
-  </div>
-  <button class="btn ghost history-btn" id="undo" title="되돌리기 (Ctrl+Z)" aria-label="되돌리기" disabled>↶</button>
-  <button class="btn ghost history-btn" id="redo" title="되살리기 (Ctrl+Y)" aria-label="되살리기" disabled>↷</button>
-  <span class="spacer"></span>
-  <span id="visitstat" aria-live="polite" title="같은 브라우저에서는 하루 한 번 집계됩니다"></span>
-  <div class="savegrp">
-    <div class="seg savefmt" aria-label="저장 파일 형식">
-      <label><input type="radio" name="fmt" value="pdf" checked><span>PDF</span></label>
-      <label><input type="radio" name="fmt" value="jpg"><span>JPG</span></label>
-    </div>
-    <button class="btn primary" id="save" disabled>표시본 저장</button>
+  <div class="header-tools">
+    <div class="seg" id="tools" role="group" aria-label="편집 도구" title="도구 (V · H · A · M · S)"><button data-t="sel">선택</button><button data-t="hl" class="on">형광펜</button><button data-t="area">영역</button><button data-t="memo">메모</button><button data-t="stk">스티커</button></div>
+    <div class="toolbar-group" id="colors" role="group" aria-label="형광펜 색상"></div>
+    <div class="toolbar-group toolbar-zoom"><span class="stepper"><button id="zout" title="축소" aria-label="축소">−</button><span id="zoomv">100%</span><button id="zin" title="확대" aria-label="확대">+</button></span><button class="btn ghost" id="zfit">폭 맞춤</button><button class="btn ghost" id="zpage">쪽 맞춤</button></div>
+    <div class="history-group"><button class="btn ghost history-btn" id="undo" title="되돌리기 (Ctrl+Z)" aria-label="되돌리기" disabled>↶</button><button class="btn ghost history-btn" id="redo" title="되살리기 (Ctrl+Y)" aria-label="되살리기" disabled>↷</button></div>
   </div>
 </header>
 <main>
-  <aside>
+  <aside id="sidebar" aria-label="편집 패널">
+    <section id="memo-inspector" hidden>
+      <div class="memo-inspector-head"><h3>메모 편집</h3><span class="inspector-badge">TEXT & SIZE</span></div>
+      <label class="field-label" for="memo-text">내용</label><textarea id="memo-text" class="inspector-input" data-memo-prop="text" rows="3" aria-label="메모 내용" placeholder="메모를 입력하세요"></textarea>
+      <label class="field-label" for="memo-font">글꼴</label><select id="memo-font" class="inspector-input" data-memo-prop="font" aria-label="메모 글꼴"></select>
+      <label class="field-label" for="memo-size">글자 크기 (pt)</label><div class="memo-slider-row"><input id="memo-size-range" type="range" min="7" max="40" step="1" data-memo-prop="fs" aria-label="글자 크기 슬라이더"><input id="memo-size" class="inspector-input" type="number" min="7" max="40" data-memo-prop="fs" aria-label="글자 크기"><button class="btn ghost" id="memo-bold" type="button" aria-label="메모 굵게" aria-pressed="false">B</button></div>
+      <div class="inspector-grid"><div><label class="field-label" for="memo-width">가로 (pt)</label><input id="memo-width" class="inspector-input" type="number" min="90" max="600" data-memo-prop="w" aria-label="메모 가로"></div><div><label class="field-label" for="memo-height">세로 (pt)</label><input id="memo-height" class="inspector-input" type="number" min="55" max="800" data-memo-prop="h" aria-label="메모 세로"></div></div>
+      <span class="field-label">글자색</span><div class="inspector-color-row" id="memo-text-colors" role="group" aria-label="메모 글자색"></div>
+      <span class="field-label">배경색</span><div class="inspector-color-row" id="memo-paper-colors" role="group" aria-label="메모 배경색"></div>
+      <div class="memo-actions"><button class="btn primary" type="button" id="memo-add">문서에 새 메모 추가</button><button class="btn ghost" type="button" id="memo-delete">삭제</button></div>
+      <p id="memo-status" role="status"></p>
+    </section>
     <section>
-      <h3>담보 찾기</h3>
-      <div class="sugwrap">
-        <input class="inp" id="q" placeholder="담보명 일부를 입력 (예: 암진단, 수술비)" autocomplete="off">
-        <div class="sugbox" id="sug"></div>
-      </div>
-      <div class="row" style="margin-top:8px"><button class="btn" id="qall" hidden>이 단어가 있는 줄 모두 칠하기</button></div>
-      <p class="hint">해당 항목을 선택하고 Enter를 누르면 그 자리로 갑니다.</p>
+      <div class="search-heading"><label for="q">담보 찾기</label><div class="sugwrap"><input class="inp" id="q" placeholder="담보명 검색" aria-label="담보 찾기" autocomplete="off"><div class="sugbox" id="sug"></div></div></div>
+      <div class="search-actions"><button class="btn" id="qall" hidden>이 단어가 있는 줄 모두 칠하기</button></div>
     </section>
 
     <section>
       <h3>내 문구</h3>
       <div id="phrases"></div>
-      <div class="row" style="margin-top:9px"><input class="inp" id="pnew" placeholder="자주 쓰는 문구 추가 (Enter)"><button class="btn" id="padd">추가</button></div>
+      <div class="row"><input class="inp" id="pnew" aria-label="자주 쓰는 문구" placeholder="자주 쓰는 문구 추가"><button class="btn" id="padd">추가</button></div>
       <p class="hint">형광펜이나 메모를 선택한 뒤 문구를 클릭하면 추가됩니다.</p>
     </section>
 
@@ -320,29 +318,23 @@ body.stk-on #toast{bottom:152px}
       <div class="list" id="list"></div>
     </section>
 
-    <div class="note">PDF와 내 문구는 서버로 전송되지 않습니다. 내 문구는 사용자별 브라우저에 따로 저장되며, 같은 PC의 같은 브라우저 프로필을 함께 쓰는 경우에만 공유됩니다. 원본 PDF는 바뀌지 않습니다.<br><br>
-    형광펜 : 글자를 끌거나 더블클릭해 연속으로 칠할 수 있습니다<br>영역·메모 : 선택하면 같은 편집 막대가 뜨고 이동·크기·색을 바꿀 수 있습니다<br>스티커 : 도구를 누르면 아래에서 고릅니다 · Delete 삭제 · Ctrl+Z 되돌리기</div>
+    <details class="usage-note"><summary>사용 안내</summary><p>PDF와 메모는 서버로 전송되지 않습니다. 내 문구는 이 브라우저에 저장됩니다.</p><p>형광펜은 글자를 끌어 선택하세요. 메모는 문서 위에서 직접 쓰거나 편집 패널에서 바꿀 수 있습니다. 모서리를 끌면 크기를 조절할 수 있습니다.</p><p>Delete 삭제 · Ctrl+Z 되돌리기</p></details>
   </aside>
   <section id="viewer">
     <div id="pages"></div>
     <div id="empty">
-      <div class="card">
-        <h2>가입제안서 PDF를 여기에 끌어다 놓으세요</h2>
-        <p>글자를 끌어 형광펜을 칠하고, '언제 받는지' 메모와 스티커를 붙일 수 있습니다.</p>
-        <p>파일은 이 PC 밖으로 나가지 않고, 원본은 바뀌지 않습니다.</p>
-
-        <label class="btn primary" for="file">PDF 열기</label>
-      </div>
+      <div class="card"><p class="empty-eyebrow">DOCUMENT WORKSPACE</p><svg class="empty-document" viewBox="0 0 48 56" aria-hidden="true"><path d="M28 3H8a3 3 0 0 0-3 3v44a3 3 0 0 0 3 3h32a3 3 0 0 0 3-3V18L28 3Z"/><path d="M28 3v15h15M15 30h18M15 37h12"/></svg><h2>필요한 표시를 더하고,<br>깔끔하게 전달하세요.</h2><p>PDF를 여기에 놓거나 파일을 선택하세요.<br>형광펜 · 메모 · 색연필 스티커</p><label class="btn primary" for="file" tabindex="0" role="button">PDF 열기</label><p class="privacy-line">파일은 이 기기에서만 처리되며 원본은 바뀌지 않습니다.</p></div>
     </div>
   </section>
 </main>
 </div>
-<img id="brandci" src="assets/meritz-ci.png" alt="메리츠화재">
+<svg id="brandci" viewBox="0 0 615 178" width="615" height="178" role="img" aria-label="meritz" overflow="hidden"><image href="assets/meritz-ci.png" width="1190" height="178"/></svg>
 <div id="stkbar" role="dialog" aria-label="스티커 선택">
   <div class="stkhd">
-    <div class="copy"><b>스티커</b><span>하나를 고른 뒤 제안서에서 붙일 곳을 누르세요.</span></div>
+    <div class="copy"><b>색연필 스티커</b><span>모양과 색을 고른 뒤 문서에서 붙일 곳을 누르세요.</span></div>
     <button class="stkclose" id="stkclose" title="스티커 패널 닫기">✕</button>
   </div>
+  <div class="stk-color-control"><span>색상</span><div id="stkcolors" role="group" aria-label="스티커 색상"></div></div>
   <div class="stkbody">
     <div class="stk" id="stk"></div>
     <label class="addpic" for="stkfile">＋ 내 이미지</label>
@@ -466,7 +458,7 @@ const STK_IMG_W = 58;        // 내 이미지 기본 폭 (pt) — 붙인 뒤 모
 const MEMO_W = 150;          // 메모 상자 폭 (pt)
 const MEMO_FS = 9;           // 메모 글자 크기 (pt)
 const MEMO_LH = 12.5;        // 메모 줄 간격 (pt)
-const FONT = '"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR",sans-serif';
+const FONT = '"Workroom Sans","Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR",sans-serif';
 
 /* ───────── 준비 ───────── */
 const $ = (s) => document.querySelector(s);
@@ -493,8 +485,90 @@ class NoStdFontFactory {                        // 표준 글꼴 파일은 넣�
 const S = {
   doc: null, bytes: null, name: '', pages: [], scale: 1, tool: 'hl', color: 0,
   ann: [], sel: null, undo: [], redo: [], dirty: false, seq: 1, results: [],
-  imgs: [], stkSel: null,          // imgs : 사용자가 올린 스티커 그림
+  imgs: [], stkSel: null, stkColor: 'red',          // imgs : 사용자가 올린 스티커 그림
 };
+const memoDraft = {text:'', w:180, h:96, fs:12, font:'', bold:false, textColor:'#171717', paper:'#ffffff'};
+const MEMO_PAPERS = [['#ffffff','흰색'],['#fff4c8','노랑'],['#e1f3e7','초록'],['#fbe3e8','분홍']];
+let inspectorMemoId = null;
+function inspectorModel() { const a = selAnn(); return a?.type === 'memo' ? a : memoDraft; }
+function syncMemoInspector() {
+  const m = inspectorModel(), selected = m !== memoDraft;
+  $('#memo-inspector').hidden = !selected && S.tool !== 'memo';
+  const id = selected ? m.id : 'draft', switched = id !== inspectorMemoId;
+  inspectorMemoId = id;
+  document.querySelectorAll('[data-memo-prop]').forEach(el => {
+    if (switched || document.activeElement !== el) el.value = m[el.dataset.memoProp] ?? '';
+  });
+  $('#memo-bold').setAttribute('aria-pressed', String(!!m.bold));
+  $('#memo-delete').disabled = !selected;
+  $('#memo-status').textContent = selected ? '내용과 크기가 문서에 바로 반영됩니다.' : '내용을 적은 뒤 문서에서 붙일 위치를 누르세요.';
+  document.querySelectorAll('[data-memo-paper]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.memoPaper === (m.paper || '#ffffff'))));
+  document.querySelectorAll('[data-memo-color]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.memoColor === m.textColor)));
+}
+function applyMemoPreview(m) {
+  if (m === memoDraft) return;
+  const P = S.pages[m.page - 1], el = P?.layer.querySelector('.memo[data-id="' + m.id + '"]');
+  if (!el) return;
+  clampMemo(P, m);
+  Object.assign(el.style, {left:m.x*S.scale+'px',top:m.y*S.scale+'px',width:m.w*S.scale+'px',height:m.h*S.scale+'px',background:m.paper || '#fff'});
+  const ta = el.querySelector('textarea');
+  if (document.activeElement !== ta) ta.value = m.text;
+  Object.assign(ta.style,{fontSize:m.fs*S.scale+'px',lineHeight:m.fs*1.42*S.scale+'px',fontFamily:m.font ? '"'+m.font+'",'+FONT : FONT,fontWeight:m.bold?'700':'400',color:m.textColor});
+  S.dirty = true; drawLines(P); renderList();
+}
+function updateMemoProperty(prop, value, startUndo) {
+  const m = inspectorModel();
+  if (['w','h','fs'].includes(prop)) {
+    value = Number(value); if (!Number.isFinite(value)) return;
+    const P = m === memoDraft ? null : S.pages[m.page-1];
+    const limits = prop === 'fs' ? [7,40] : prop === 'w' ? [90,P ? P.w-4 : 600] : [55,P ? P.h-4 : 800];
+    value = Math.round(Math.max(limits[0],Math.min(limits[1],value)));
+  }
+  if (m[prop] === value) return;
+  if (m !== memoDraft && startUndo) pushUndo();
+  m[prop] = value; applyMemoPreview(m); syncMemoInspector();
+}
+$('#memo-font').innerHTML = '<option value="">기본 · Workroom Sans</option>' + MEMO_FONTS.map(f => '<option value="'+esc(f.value)+'">'+esc(f.name.replace(' · 가나다 ABC',''))+'</option>').join('');
+document.querySelectorAll('[data-memo-prop]').forEach(el => {
+  let changedInFocus = false;
+  el.addEventListener('focus', () => {changedInFocus = false;});
+  const edit = () => {
+    if (el.value === '' && ['w','h','fs'].includes(el.dataset.memoProp)) return;
+    updateMemoProperty(el.dataset.memoProp, el.value, !changedInFocus); changedInFocus = true;
+  };
+  el.addEventListener('input',edit);
+  el.addEventListener('change',() => { edit(); syncMemoInspector(); });
+  el.addEventListener('blur',() => { changedInFocus=false; syncMemoInspector(); });
+});
+$('#memo-text-colors').innerHTML = MEMO_TEXT_COLORS.map((color,i)=>'<button type="button" data-memo-color="'+color+'" style="background:'+color+'" aria-label="메모 글자색 '+MEMO_TEXT_COLOR_NAMES[i]+'" aria-pressed="false"></button>').join('');
+$('#memo-paper-colors').innerHTML = MEMO_PAPERS.map(([color,name])=>'<button type="button" data-memo-paper="'+color+'" style="background:'+color+'" aria-label="메모 배경 '+name+'" aria-pressed="false"></button>').join('');
+$('#memo-inspector').addEventListener('click',e=>{
+  const button=e.target.closest('button');if(!button)return;
+  if(button.dataset.memoColor)updateMemoProperty('textColor',button.dataset.memoColor,true);
+  if(button.dataset.memoPaper)updateMemoProperty('paper',button.dataset.memoPaper,true);
+});
+$('#memo-bold').addEventListener('click',()=>updateMemoProperty('bold',!inspectorModel().bold,true));
+$('#memo-delete').addEventListener('click',()=>{const a=selAnn();if(a?.type==='memo')delAnn(a.id);});
+$('#memo-add').addEventListener('click',()=>{
+  const current=inspectorModel();
+  if(current!==memoDraft)for(const prop of Object.keys(memoDraft))memoDraft[prop]=current[prop];
+  S.sel=null;renderAnn();renderList();setTool('memo');
+  if(innerWidth<=760){document.body.classList.remove('sidebar-open');updateSidebarButton();}
+});
+function updateSidebarButton(){
+  const open=innerWidth<=760 ? document.body.classList.contains('sidebar-open') : !document.body.classList.contains('sidebar-hidden');
+  $('#toggle-sidebar').setAttribute('aria-expanded',String(open));
+  $('#toggle-sidebar').textContent=open?'패널 닫기':'편집 패널';
+}
+$('#toggle-sidebar').addEventListener('click',()=>{
+  document.body.classList.toggle(innerWidth<=760?'sidebar-open':'sidebar-hidden');updateSidebarButton();
+});
+const editorHeaderObserver=new ResizeObserver(()=>{
+  document.documentElement.style.setProperty('--toolbar-height',document.querySelector('.editor-header').offsetHeight+'px');
+  updateSidebarButton();
+});
+editorHeaderObserver.observe(document.querySelector('.editor-header'));
+
 let phrases = PHRASES.slice();
 const PHRASE_STORE_KEY = 'gpm_phrases';
 function loadPhrases() {
@@ -542,8 +616,12 @@ function setTool(t) {
     p.el.classList.toggle('stk-mode', t === 'stk');
     p.text.classList.toggle('on', t === 'hl');       // 형광펜일 때만 글자를 끌어서 선택
   });
-  $('#stkbar').classList.toggle('on', t === 'stk');
-  document.body.classList.toggle('stk-on', t === 'stk');
+  syncMemoInspector(); syncStickerPanel();
+  if(t==='memo'){
+    document.body.classList.remove('sidebar-hidden');
+    if(innerWidth<=760)document.body.classList.add('sidebar-open');
+    updateSidebarButton();
+  }
   if (t !== 'hl') hideSelPop();
 }
 $('#tools').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setTool(b.dataset.t); });
@@ -742,13 +820,13 @@ function refreshUndo() { $('#undo').disabled = !S.undo.length; $('#redo').disabl
 function undo() {
   if (!S.undo.length) return;
   cancelTextDrag(); hideSelPop();
-  S.redo.push(snapshot()); S.ann = JSON.parse(S.undo.pop()); S.sel = null; S.dirty = true;
+  S.redo.push(snapshot()); S.ann = JSON.parse(S.undo.pop()); if (!S.ann.some(a => a.id === S.sel)) S.sel = null; S.dirty = true;
   refreshUndo(); renderAnn(); renderList();
 }
 function redo() {
   if (!S.redo.length) return;
   cancelTextDrag(); hideSelPop();
-  S.undo.push(snapshot()); S.ann = JSON.parse(S.redo.pop()); S.sel = null; S.dirty = true;
+  S.undo.push(snapshot()); S.ann = JSON.parse(S.redo.pop()); if (!S.ann.some(a => a.id === S.sel)) S.sel = null; S.dirty = true;
   refreshUndo(); renderAnn(); renderList();
 }
 function changed() { S.dirty = true; renderAnn(); renderList(); }
@@ -778,7 +856,7 @@ function addTextMark(P, rects, label, mark) {
   return a;
 }
 function addMemo(P, x, y, text, anchor, color) {
-  const m = { id: 'a' + S.seq++, type: 'memo', page: P.num, x, y, w: MEMO_W, h: 86, text: text || '', anchor: anchor || null, color: color == null ? S.color : color, bold: false, fs: MEMO_FS, textColor: MEMO_TEXT_COLORS[0] };
+  const m = { ...memoDraft, id: 'a' + S.seq++, type: 'memo', page: P.num, x, y, text: text || memoDraft.text, anchor: anchor || null, color: color == null ? S.color : color };
   clampMemo(P, m); S.ann.push(m); return m;
 }
 function clampMemo(P, m) {
@@ -796,86 +874,86 @@ function memoForHl(h, text) {
 }
 
 /* ───────── 스티커 ───────── */
-function drawArrow(c, w, h, dir) {
-  c.strokeStyle = '#C95757'; c.fillStyle = '#C95757'; c.lineWidth = Math.max(3, Math.min(w, h) * .15); c.lineCap = 'round'; c.lineJoin = 'round';
-  if (dir === 'right' || dir === 'left') {
-    const flip = dir === 'left'; const x1 = flip ? .90 : .10, x2 = flip ? .28 : .72, tip = flip ? .06 : .94, wing = flip ? .34 : .66;
-    c.beginPath(); c.moveTo(w * x1, h * .52); c.lineTo(w * x2, h * .52); c.stroke();
-    c.beginPath(); c.moveTo(w * tip, h * .52); c.lineTo(w * wing, h * .20); c.lineTo(w * wing, h * .84); c.closePath(); c.fill();
-  } else {
-    const up = dir === 'up'; const y1 = up ? .90 : .10, y2 = up ? .28 : .72, tip = up ? .06 : .94, wing = up ? .34 : .66;
-    c.beginPath(); c.moveTo(w * .50, h * y1); c.lineTo(w * .50, h * y2); c.stroke();
-    c.beginPath(); c.moveTo(w * .50, h * tip); c.lineTo(w * .18, h * wing); c.lineTo(w * .82, h * wing); c.closePath(); c.fill();
+const STICKER_COLORS = [
+  {key:'black',name:'검정',hex:'#242424'}, {key:'blue',name:'파랑',hex:'#2474c4'},
+  {key:'green',name:'초록',hex:'#338354'}, {key:'yellow',name:'노랑',hex:'#e8b523'},
+  {key:'red',name:'빨강',hex:'#dc3e36'}
+];
+function pencilRandom(seed){let state=seed>>>0;return()=>{state=(state*1664525+1013904223)>>>0;return state/4294967296;};}
+function pencilStroke(c, points, color, closed, hatch){
+  const rand=pencilRandom(8173+points.length*31), W=c.canvas.width;
+  c.strokeStyle=color;c.fillStyle=color;c.lineCap='round';c.lineJoin='round';
+  function trace(dx,dy,jitter){
+    c.beginPath();points.forEach(([x,y],i)=>{const xx=x+dx+(rand()-.5)*jitter,yy=y+dy+(rand()-.5)*jitter;i?c.lineTo(xx,yy):c.moveTo(xx,yy);});
+    if(closed)c.closePath();
   }
+  if(hatch){
+    c.save();trace(0,0,0);c.clip();c.globalAlpha=.18;c.lineWidth=W*.008;
+    for(let y=-W;y<W*2;y+=W*.028){c.beginPath();c.moveTo(0,y);c.lineTo(W,y+W*.52);c.stroke();}c.restore();
+  }
+  for(let pass=0;pass<17;pass++){
+    const spread=W*.024,dx=(rand()-.5)*spread,dy=(rand()-.5)*spread;
+    trace(dx,dy,W*.006);c.globalAlpha=pass<3?.14:.25;c.lineWidth=W*(pass<3?.032:.007+rand()*.006);c.stroke();
+  }
+  // Tiny gaps in the pigment expose the paper, like a colored pencil on grain.
+  c.save();c.globalCompositeOperation='destination-out';
+  for(let i=0;i<4200;i++){c.globalAlpha=.18+rand()*.5;c.fillRect(rand()*W,rand()*c.canvas.height,.4+rand()*1.2,.4+rand()*1.2);}
+  c.restore();c.globalAlpha=1;
 }
-function drawPencilStar(c, w, h, color) {
-  const pts = [], cx = w / 2, cy = h / 2, outer = Math.min(w, h) * .43, inner = outer * .43;
-  for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? inner : outer; pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); }
-  c.lineJoin = 'round'; c.lineCap = 'round';
-  const passes = [[0, 0, 1], [1.4, -.9, .46], [-1.1, .7, .28]];
-  for (const [dx, dy, alpha] of passes) {
-    c.beginPath(); c.moveTo(pts[0][0] + dx, pts[0][1] + dy);
-    for (let i = 1; i <= pts.length; i++) { const p = pts[i % pts.length]; c.lineTo(p[0] + dx, p[1] + dy); }
-    c.strokeStyle = color || '#E33135'; c.globalAlpha = alpha; c.lineWidth = Math.max(1.4, outer * (alpha === 1 ? .105 : .045)); c.stroke();
+function pencilShape(c,w,h,key,color){
+  let points=[],closed=false,hatch=false;
+  if(key==='check')points=[[.16,.52],[.28,.64],[.4,.76],[.57,.51],[.85,.2]];
+  else if(key==='x'){
+    pencilStroke(c,[[.2*w,.2*h],[.48*w,.49*h],[.8*w,.81*h]],color,false,false);
+    points=[[.81,.19],[.54,.48],[.19,.81]];
+  }else if(key==='circle'){
+    for(let i=0;i<82;i++){const t=-.18+i/81*Math.PI*2;points.push([.5+Math.cos(t)*(.374+Math.sin(t*3)*.009),.5+Math.sin(t)*(.356+Math.cos(t*2)*.012)]);}closed=true;
+  }else if(key==='star'){
+    for(let i=0;i<10;i++){const t=-Math.PI/2+i*Math.PI/5,r=i%2?.19:.42;points.push([.5+Math.cos(t)*r,.5+Math.sin(t)*r]);}closed=true;hatch=true;
+  }else{
+    const direction=key.replace('arrow-','');
+    const transform=([x,y])=>direction==='left'?[1-x,y]:direction==='up'?[y,1-x]:direction==='down'?[y,x]:[x,y];
+    const shaft=[[.12,.51],[.44,.49],[.87,.51]].map(transform).map(([x,y])=>[x*w,y*h]);
+    pencilStroke(c,shaft,color,false,false);points=[[.62,.24],[.87,.51],[.61,.78]].map(transform);
   }
-  c.globalAlpha = 1;
-}
-function drawPencilCheck(c, w, h, color) {
-  const p = [[w * .16, h * .53], [w * .40, h * .77], [w * .84, h * .22]];
-  c.lineCap = 'round'; c.lineJoin = 'round';
-  const passes = [[0, 0, 1], [1.2, -.8, .42], [-.9, .8, .25]];
-  for (const [dx, dy, alpha] of passes) {
-    c.beginPath(); c.moveTo(p[0][0] + dx, p[0][1] + dy); c.lineTo(p[1][0] + dx, p[1][1] + dy); c.lineTo(p[2][0] + dx, p[2][1] + dy);
-    c.strokeStyle = color || '#E33135'; c.globalAlpha = alpha; c.lineWidth = Math.max(1.5, Math.min(w, h) * (alpha === 1 ? .095 : .04)); c.stroke();
-  }
-  c.globalAlpha = 1;
-}
-function drawPencilCircle(c, w, h, color) {
-  c.strokeStyle = color || '#E33135'; c.lineCap = 'round'; c.lineJoin = 'round';
-  const passes = [[0, 0, 1], [1.3, -.8, .42], [-1.1, .7, .26]];
-  for (const [dx, dy, alpha] of passes) {
-    c.beginPath(); c.ellipse(w * .5 + dx, h * .5 + dy, w * .39, h * .35, -.06, 0, Math.PI * 2);
-    c.globalAlpha = alpha; c.lineWidth = Math.max(1.5, Math.min(w, h) * (alpha === 1 ? .08 : .035)); c.stroke();
-  }
-  c.globalAlpha = 1;
-}
-function drawPencilX(c, w, h, color) {
-  c.strokeStyle = color || '#E33135'; c.lineCap = 'round'; c.lineJoin = 'round';
-  const passes = [[0, 0, 1], [1.1, -.7, .42], [-.9, .8, .24]];
-  for (const [dx, dy, alpha] of passes) {
-    c.beginPath();
-    c.moveTo(w * .18 + dx, h * .18 + dy); c.lineTo(w * .82 + dx, h * .82 + dy);
-    c.moveTo(w * .82 + dx, h * .18 + dy); c.lineTo(w * .18 + dx, h * .82 + dy);
-    c.globalAlpha = alpha; c.lineWidth = Math.max(1.5, Math.min(w, h) * (alpha === 1 ? .095 : .04)); c.stroke();
-  }
-  c.globalAlpha = 1;
+  pencilStroke(c,points.map(([x,y])=>[x*w,y*h]),color,closed,hatch);
 }
 const BUILTIN = [
-  { k: 'check', n: '체크', r: 1, w: 36, draw(c, w, h) { drawPencilCheck(c, w, h); } },
-  { k: 'star', n: '별', r: 1, w: 40, draw(c, w, h) { drawPencilStar(c, w, h); } },
-  { k: 'x', n: '엑스', r: 1, w: 36, draw(c, w, h) { drawPencilX(c, w, h); } },
-  { k: 'circle', n: '동그라미', r: 1, w: 52, draw(c, w, h) { drawPencilCircle(c, w, h); } },
-  { k: 'star-blue', n: '별 · 파랑', r: 1, w: 40, draw(c, w, h) { drawPencilStar(c, w, h, '#18A9E8'); } },
-  { k: 'star-black', n: '별 · 검정', r: 1, w: 40, draw(c, w, h) { drawPencilStar(c, w, h, '#111111'); } },
-  { k: 'check-blue', n: '체크 · 파랑', r: 1, w: 36, draw(c, w, h) { drawPencilCheck(c, w, h, '#18A9E8'); } },
-  { k: 'check-black', n: '체크 · 검정', r: 1, w: 36, draw(c, w, h) { drawPencilCheck(c, w, h, '#111111'); } },
-  { k: 'x-blue', n: '엑스 · 파랑', r: 1, w: 36, draw(c, w, h) { drawPencilX(c, w, h, '#18A9E8'); } },
-  { k: 'x-black', n: '엑스 · 검정', r: 1, w: 36, draw(c, w, h) { drawPencilX(c, w, h, '#111111'); } },
-  { k: 'circle-blue', n: '동그라미 · 파랑', r: 1, w: 52, draw(c, w, h) { drawPencilCircle(c, w, h, '#18A9E8'); } },
-  { k: 'arrow-right', n: '→', r: .42, w: 58, draw(c, w, h) { drawArrow(c, w, h, 'right'); } },
-  { k: 'arrow-left', n: '←', r: .42, w: 58, draw(c, w, h) { drawArrow(c, w, h, 'left'); } },
-  { k: 'arrow-up', n: '↑', r: 2.35, w: 25, draw(c, w, h) { drawArrow(c, w, h, 'up'); } },
-  { k: 'arrow-down', n: '↓', r: 2.35, w: 25, draw(c, w, h) { drawArrow(c, w, h, 'down'); } },
+  {k:'check',n:'체크',r:1,w:40},{k:'star',n:'중요 · 별',r:1,w:44},
+  {k:'circle',n:'동그라미',r:1,w:54},{k:'x',n:'엑스',r:1,w:40},
+  {k:'arrow-right',n:'오른쪽 화살표',r:1,w:54},{k:'arrow-left',n:'왼쪽 화살표',r:1,w:54},
+  {k:'arrow-up',n:'위쪽 화살표',r:1,w:44},{k:'arrow-down',n:'아래쪽 화살표',r:1,w:44}
 ];
-const _bcache = {};
-function builtinDef(src) { return BUILTIN.find((b) => 'b:' + b.k === src); }
-function builtinUrl(k) {
-  if (_bcache[k]) return _bcache[k];
-  const d = BUILTIN.find((b) => b.k === k); if (!d) return '';
-  const W = 240, H = Math.round(W * d.r), cv = document.createElement('canvas'); cv.width = W; cv.height = H;
-  d.draw(cv.getContext('2d'), W, H);
-  return (_bcache[k] = cv.toDataURL('image/png'));
+const _bcache={};
+function builtinDef(src){
+  if(!src?.startsWith('b:'))return null;
+  let [key,color='red']=src.slice(2).split(':');
+  if(/-(blue|black)$/.test(key)){color=key.split('-').pop();key=key.replace(/-(blue|black)$/,'');}
+  const shape=BUILTIN.find(b=>b.k===key);return shape?{...shape,color:STICKER_COLORS.find(c=>c.key===color)||STICKER_COLORS[4]}:null;
 }
+function builtinUrl(key){
+  const d=builtinDef('b:'+key);if(!d)return '';
+  const cacheKey=d.k+':'+d.color.key;if(_bcache[cacheKey])return _bcache[cacheKey];
+  const cv=document.createElement('canvas');cv.width=320;cv.height=Math.round(320*d.r);
+  pencilShape(cv.getContext('2d'),cv.width,cv.height,d.k,d.color.hex);
+  return _bcache[cacheKey]=cv.toDataURL('image/png');
+}
+function syncStickerPanel(){
+  const selected=selAnn(),show=S.tool==='stk'||selected?.type==='stk';
+  $('#stkbar').classList.toggle('on',show);document.body.classList.toggle('stk-on',show);
+  if(selected?.type==='stk'){const d=builtinDef(selected.src);if(d)S.stkColor=d.color.key;}
+  document.querySelectorAll('[data-sticker-color]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.stickerColor===S.stkColor)));
+}
+$('#stkcolors').innerHTML=STICKER_COLORS.map(c=>'<button type="button" class="stk-color" data-sticker-color="'+c.key+'" style="background:'+c.hex+'" aria-label="스티커 색상 '+c.name+'" aria-pressed="false"></button>').join('');
+$('#stkcolors').addEventListener('click',e=>{
+  const button=e.target.closest('[data-sticker-color]');if(!button)return;
+  S.stkColor=button.dataset.stickerColor;
+  const pending=builtinDef(S.stkSel),a=selAnn(),existing=a?.type==='stk'?builtinDef(a.src):null;
+  if(pending)S.stkSel='b:'+pending.k+':'+S.stkColor;
+  if(existing){pushUndo();a.src='b:'+existing.k+':'+S.stkColor;changed();}
+  renderStickers();syncStickerPanel();
+});
+
 function userImg(src) { return S.imgs.find((i) => 'u:' + i.key === src); }
 function stickerUrl(src) { if (!src) return ''; if (src.startsWith('b:')) return builtinUrl(src.slice(2)); const i = userImg(src); return i ? i.url : ''; }
 function stickerRatio(src) { const d = builtinDef(src), i = userImg(src); return d ? d.r : (i ? i.h / i.w : 1); }
@@ -950,7 +1028,8 @@ function renderStickers() {
     });
     host.appendChild(w);
   };
-  BUILTIN.forEach((b) => mk('b:' + b.k, b.n, false));
+  BUILTIN.forEach((b) => mk('b:' + b.k + ':' + S.stkColor, b.n, false));
+  syncStickerPanel();
   S.imgs.forEach((i) => mk('u:' + i.key, i.name, true));
 }
 function saveImgs() {                                   // 다음에 열 때도 남도록 (안 되면 그냥 넘어감)
@@ -985,7 +1064,7 @@ $('#stkfile').addEventListener('change', async (e) => {
   saveImgs(); renderStickers();
   toast(fs.length ? fs.length + '개 이미지를 추가했습니다.' : '이미지를 선택하지 않았습니다.');
 });
-$('#stkclose').addEventListener('click', () => { S.stkSel = null; setTool('sel'); renderStickers(); });
+$('#stkclose').addEventListener('click', () => { S.stkSel = null; if(selAnn()?.type==='stk'){S.sel=null;renderAnn();renderList();}setTool('sel'); renderStickers(); });
 renderStickers();
 
 /* 화면과 PDF/JPG에 같은 좌표를 사용하고, 줄 아래 여백 안에 밑줄을 붙인다. */
@@ -1071,59 +1150,23 @@ function renderAnn() {
       m.className = 'memo' + (S.sel === a.id ? ' on' : ''); m.dataset.id = a.id;
       if (!a.h) a.h = 86; if (!a.fs) a.fs = MEMO_FS; if (!a.textColor) a.textColor = MEMO_TEXT_COLORS[0]; if (a.font == null) a.font = '';
       const paper = c.paper || c.hex;
-      Object.assign(m.style, { left: a.x * k + 'px', top: a.y * k + 'px', width: a.w * k + 'px', height: a.h * k + 'px', background: hexRgba(paper, .64) });
-      m.innerHTML = '<div class="dragzone" title="끌어서 메모 이동"><span class="movegrip">✥</span></div>' +
-        '<textarea spellcheck="false" placeholder="메모 입력"></textarea><span class="mrz" title="끌어서 크기 조절"></span>';
+      Object.assign(m.style, { left: a.x * k + 'px', top: a.y * k + 'px', width: a.w * k + 'px', height: a.h * k + 'px', background: a.paper || '#ffffff' });
+      m.innerHTML = '<div class="dragzone" title="끌어서 메모 이동"><span class="movegrip">✥</span> 이동</div>' +
+        '<textarea spellcheck="false" placeholder="메모 입력" aria-label="문서 메모"></textarea><span class="mrz" title="끌어서 크기 조절"></span>';
       const ta = m.querySelector('textarea');
       ta.value = a.text;
       Object.assign(ta.style, { fontSize: a.fs * k + 'px', lineHeight: a.fs * 1.42 * k + 'px', fontFamily: a.font ? '"' + a.font + '",' + FONT : FONT, fontWeight: a.bold ? '700' : '400', color: a.textColor });
       P.layer.appendChild(m);
       let pushed = false;
       ta.addEventListener('focus', () => { pushed = false; if (S.sel !== a.id) setTimeout(() => select(a.id, true), 0); });
-      ta.addEventListener('input', () => { if (!pushed) { pushUndo(); pushed = true; } a.text = ta.value; S.dirty = true; drawLines(P); renderList(); });
+      ta.addEventListener('input', () => { if (!pushed) { pushUndo(); pushed = true; } a.text = ta.value; S.dirty = true; drawLines(P); renderList(); syncMemoInspector(); });
       ta.addEventListener('pointerdown', (e) => e.stopPropagation());
       dragMemo(m.querySelector('.dragzone'), a, P, m);
       resizeMemo(m.querySelector('.mrz'), a, P, m);
-      if (S.sel === a.id) {
-        const tools = document.createElement('div'); tools.className = 'ft memo-tools'; tools.dataset.for = a.id;
-        Object.assign(tools.style, { left: a.x * k + 'px', top: a.y * k + 'px' });
-        tools.innerHTML = '<button data-act="bold" class="' + (a.bold ? 'on' : '') + '" title="굵게"><b>B</b></button>' +
-          '<button data-act="smaller" title="글자 작게">A−</button><button data-act="larger" title="글자 크게">A＋</button>' +
-          '<select data-act="font" aria-label="폰트 선택"><option value="">기본 폰트 · 가나다 ABC</option>' + MEMO_FONTS.map((f) => '<option value="' + esc(f.value) + '" style="font-family:' + esc(f.value) + ';"' + (a.font === f.value ? ' selected' : '') + '>' + esc(f.name) + '</option>').join('') + '</select>' +
-          '<span class="tool-sep"></span>' +
-          MEMO_TEXT_COLORS.map((col, i) => '<button class="tc' + (a.textColor === col ? ' on' : '') + '" data-color="' + col + '" style="background:' + col + '" title="글자색 ' + MEMO_TEXT_COLOR_NAMES[i] + '"></button>').join('') +
-          '<span class="tool-sep"></span>' +
-          COLORS.map((col, i) => '<button class="mc' + (a.color === i ? ' on' : '') + '" data-bg="' + i + '" style="background:' + (col.paper || col.hex) + '" title="메모 배경 ' + col.name + '"></button>').join('') +
-          '<button data-act="del" title="메모 삭제">삭제</button>';
-        const fontSelect = tools.querySelector('select[data-act="font"]');
-        if (fontSelect) fontSelect.style.fontFamily = a.font ? '"' + a.font + '",' + FONT : FONT;
-        tools.addEventListener('pointerdown', (e) => e.stopPropagation());
-        tools.addEventListener('click', (e) => {
-          const b = e.target.closest('button'); const selectEl = e.target.closest('select'); if (selectEl) return; if (!b) return;
-          pushUndo();
-          if (b.dataset.act === 'bold') a.bold = !a.bold;
-          else if (b.dataset.act === 'smaller') a.fs = Math.max(7, (a.fs || MEMO_FS) - 1);
-          else if (b.dataset.act === 'larger') a.fs = Math.min(16, (a.fs || MEMO_FS) + 1);
-          else if (b.dataset.act === 'del') { delAnn(a.id); return; }
-          else if (b.dataset.bg !== undefined) a.color = +b.dataset.bg;
-          else if (b.dataset.color) a.textColor = b.dataset.color;
-          changed(); select(a.id, true);
-        });
-        tools.addEventListener('change', (e) => {
-          if (e.target.dataset.act !== 'font') return;
-          pushUndo(); a.font = e.target.value; changed(); select(a.id, true);
-        });
-        P.layer.appendChild(tools);
-        const maxLeft = Math.max(4, P.w * k - tools.offsetWidth - 4);
-        tools.style.left = Math.min(maxLeft, Math.max(4, a.x * k)) + 'px';
-        if (a.y * k < tools.offsetHeight + 10) {
-          tools.classList.add('below');
-          tools.style.top = (a.y + a.h) * k + 'px';
-        }
-      }
     }
   }
   S.pages.forEach(drawLines);
+  syncMemoInspector(); syncStickerPanel();
 }
 function markSel() {
   document.querySelectorAll('.hl.on,.memo.on').forEach((e) => e.classList.remove('on'));
@@ -1188,7 +1231,7 @@ function resizeMemo(handle, a, P, el) {
       a.h = Math.max(55, Math.min(P.h - a.y - 2, oh + dy));
       Object.assign(el.style, { width: a.w * k + 'px', height: a.h * k + 'px' }); drawLines(P);
     };
-    const up = () => { handle.removeEventListener('pointermove', mv); handle.removeEventListener('pointerup', up); if (moved) { S.dirty = true; renderList(); } };
+    const up = () => { handle.removeEventListener('pointermove', mv); handle.removeEventListener('pointerup', up); if (moved) { S.dirty = true; renderList(); syncMemoInspector(); } };
     handle.addEventListener('pointermove', mv); handle.addEventListener('pointerup', up);
   });
 }
@@ -1439,7 +1482,7 @@ window.addEventListener('blur', () => { cancelTextDrag(); hideSelPop(); });
 window.addEventListener('resize', () => { cancelTextDrag(); hideSelPop(); });
 /* 키보드 */
 document.addEventListener('keydown', (e) => {
-  const typing = /^(INPUT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName);
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement && document.activeElement.tagName);
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !typing) { e.preventDefault(); undo(); return; }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y' && !typing) { e.preventDefault(); redo(); return; }
   if (typing) { if (e.key === 'Escape') document.activeElement.blur(); return; }
@@ -1543,7 +1586,7 @@ function goTo(P, y) {
 /* ───────── 메모 문구 ───────── */
 function renderPhrases() {
   const host = $('#phrases'); host.innerHTML = '';
-  if (!phrases.length) { host.innerHTML = '<div class="emptyline">아래에서 자주 쓰는 문구를 추가하세요.</div>'; return; }
+  if (!phrases.length) return;
   const c = document.createElement('div'); c.className = 'chips';
   phrases.forEach((t, i) => {
     const w = document.createElement('div'); w.className = 'chipw';
@@ -1636,7 +1679,7 @@ function memoImage(m) {
   ctx.font = (m.bold ? '700 ' : '400 ') + fs * K + 'px ' + memoFont;
   const lines = wrap(ctx, m.text || '', (m.w - pad * 2) * K);
   cv.width = Math.ceil(m.w * K); cv.height = Math.ceil(hpt * K);
-  ctx.fillStyle = hexRgba(c.paper || c.hex, .68); roundRect(ctx, 1, 1, cv.width - 2, cv.height - 2, 3 * K); ctx.fill();
+  ctx.fillStyle = m.paper || '#ffffff'; roundRect(ctx, 1, 1, cv.width - 2, cv.height - 2, 3 * K); ctx.fill();
   ctx.strokeStyle = 'rgba(60,60,67,.18)'; ctx.lineWidth = .75 * K; roundRect(ctx, 1.5 * K, 1.5 * K, cv.width - 3 * K, cv.height - 3 * K, 3 * K); ctx.stroke();
   const top = 7;
   ctx.fillStyle = m.textColor || MEMO_TEXT_COLORS[0]; ctx.font = (m.bold ? '700 ' : '400 ') + fs * K + 'px ' + memoFont; ctx.textBaseline = 'alphabetic';
@@ -1651,6 +1694,7 @@ function pdfRect(P, a) {
 }
 async function buildMarkedPdf() {
   if (!S.bytes) return;
+  await Promise.all(S.ann.filter(a => a.type === 'memo').map(m => document.fonts.load((m.bold ? '700 ' : '400 ') + (m.fs || MEMO_FS) + 'px "' + (m.font || 'Workroom Sans') + '"', m.text || '가나다 ABC').catch(() => [])));
   const { PDFDocument, BlendMode } = PDFLib;
   const out = await PDFDocument.load(S.bytes, { updateMetadata: false });
   if (out.isEncrypted) throw new Error('보안이 걸린 PDF라 표시본을 만들 수 없습니다.');
@@ -1758,32 +1802,9 @@ async function exportMarked() {
   } finally { btn.disabled = false; }
 }
 
-/* ───────── 선택형 방문 통계 (PDF·메모 내용은 보내지 않음) ───────── */
-async function initVisitStats() {
-  const cfg = window.PDF_EDITOR_CONFIG || {};
-  if (cfg.cloudflareBeaconToken) {
-    const s = document.createElement('script');
-    s.defer = true; s.src = 'https://static.cloudflareinsights.com/beacon.min.js';
-    s.dataset.cfBeacon = JSON.stringify({ token: cfg.cloudflareBeaconToken });
-    document.head.appendChild(s);
-  }
-  if (!cfg.counterEndpoint) return;
-  const day = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
-  const key = 'pdf_editor_visit_' + day;
-  const counted = localStorage.getItem(key) === '1';
-  try {
-    const res = await fetch(cfg.counterEndpoint.replace(/\/$/, '') + (counted ? '/api/stats' : '/api/visit'), { method: counted ? 'GET' : 'POST', mode: 'cors', cache: 'no-store' });
-    if (!res.ok) throw new Error('방문 통계 응답 오류');
-    const data = await res.json();
-    if (!counted) localStorage.setItem(key, '1');
-    if (Number.isFinite(data.today) && Number.isFinite(data.total)) {
-      const el = $('#visitstat');
-      el.innerHTML = '<span class="vicon">↗</span><span class="vcopy"><span class="vlabel">방문 현황</span><span class="vnums">오늘 ' + data.today.toLocaleString('ko-KR') + ' · 누적 ' + data.total.toLocaleString('ko-KR') + '</span></span>';
-      el.classList.add('on');
-    }
-  } catch (e) { console.warn('방문 통계를 불러오지 못했습니다.', e); }
-}
-initVisitStats();
+// Visits are counted on the WORKROOM homepage.
+document.querySelectorAll('label[for="file"][role="button"]').forEach(label=>label.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('#file').click();}}));
+syncMemoInspector();
 
 window.__tool = { S, openFile, renderSug, gotoSug, paintSug, buildMarkedPdf, exportMarked, exportJpg, usePhrase, select, setTool };   // 점검용
 })();
