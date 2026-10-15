@@ -1,12 +1,6 @@
-# meritz-workroom · GitHub Pages
+# PDF Editor
 
-이 저장소는 대문과 PDF 편집기, 명함 제작기의 공개 정적 배포를 제공합니다.
-
-- 대문: `index.html` — https://minovation-tf.github.io/pdf-editor/
-- PDF 편집기: `pdf-editor.html` — https://minovation-tf.github.io/pdf-editor/pdf-editor.html
-- 명함 제작기: `namecard-maker/index.html` — https://minovation-tf.github.io/pdf-editor/namecard-maker/
-
-대문 소스는 비공개 `minovation-TF/meritz-workroom`, 명함 소스는 비공개 `minovation-TF/namecard-maker`에서 관리합니다. 명함은 해당 저장소의 `pnpm build:pages` 결과인 `dist-pages/`를 `namecard-maker/`에 게시합니다. 이미지는 검증된 묶음에서 복원하며 소스 프로젝트의 서버·인증 설정은 이 정적 배포에 포함하지 않습니다.
+운영 주소는 `https://minovation-tf.github.io/pdf-editor/`입니다. 대문은 `https://minovation-tf.github.io/meritz-workroom/`, 명함 제작기는 `https://minovation-tf.github.io/namecard-maker/`에서 각각 배포합니다.
 
 가입제안서 PDF를 브라우저 안에서 열어 형광펜, 메모, 스티커를 표시하고 PDF 또는 JPG로 저장하는 단일 페이지 도구입니다.
 
@@ -25,7 +19,7 @@
 
 ## GitHub Pages 배포
 
-현재 GitHub Pages는 `main` 브랜치의 루트를 배포하도록 설정되어 있습니다. `.nojekyll`을 유지하고, 검증된 정적 결과물을 `main`에 반영하면 GitHub의 Pages 빌드·배포가 실행됩니다. 청구 서류는 대문의 다운로드 목록에 있는 빈 양식 18종만 포함합니다. 사용자의 PDF 원본이나 명함 입력 데이터는 이 저장소에 저장하지 않습니다.
+GitHub Pages는 `main` 브랜치 루트를 게시합니다. `index.html`은 실제 편집기인 `pdf-editor.html`로 이동합니다. 사용자 PDF와 편집 내용은 GitHub 저장소에 전송하지 않습니다. 이전 통합 배포 주소의 명함 진입점은 독립 명함 주소로 안내합니다.
 
 ## 방문 통계
 

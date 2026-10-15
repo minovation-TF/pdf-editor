@@ -1,10 +1,11 @@
 {
-  "workroom": "977a5854416187de61f95d4801bcfe56d205fd46",
-  "namecard": "77d7b70f07da9a8e73b363c99a2d3bb6df755176",
+  "workroom": "bb517c2224f3985024f31332a6817a47d421c9a1",
+  "namecard": "779a2b7e4804ed9872eabf3ff610b933f118afb3",
   "pdfEditor": "4dd9fb2138eea2083ecaa77ad8f548a165b7d92d",
   "routes": {
-    "home": "/pdf-editor/",
-    "pdfEditor": "/pdf-editor/pdf-editor.html",
-    "namecard": "/pdf-editor/namecard-maker/"
-  }
+    "home": "/meritz-workroom/",
+    "pdfEditor": "/pdf-editor/",
+    "namecard": "/namecard-maker/"
+  },
+  "repositories": "public"
 }
