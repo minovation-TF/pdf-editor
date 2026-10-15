@@ -1,0 +1,14 @@
+{
+  "source": "Existing user-provided company wordmark thumbnails",
+  "processing": "Imagegen black lettering variant with transparent background; originals retained separately",
+  "assets": [
+    {
+      "id": "meritz-ko-black",
+      "file": "meritz-ko-black.png"
+    },
+    {
+      "id": "partners-ko-black",
+      "file": "partners-ko-black.png"
+    }
+  ]
+}

@@ -1,6 +1,9 @@
 tmp/
 output/
 *.pdf
+!assets/claim-documents/
+!assets/claim-documents/*.pdf
 *.jpg
 *.jpeg
 worker/node_modules/
+!namecard-maker/**

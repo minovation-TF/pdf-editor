@@ -1,4 +1,12 @@
-# PDF Editor
+# meritz-workroom · GitHub Pages
+
+이 저장소는 대문과 PDF 편집기, 명함 제작기의 공개 정적 배포를 제공합니다.
+
+- 대문: `index.html` — https://minovation-tf.github.io/pdf-editor/
+- PDF 편집기: `pdf-editor.html` — https://minovation-tf.github.io/pdf-editor/pdf-editor.html
+- 명함 제작기: `namecard-maker/index.html` — https://minovation-tf.github.io/pdf-editor/namecard-maker/
+
+대문 소스는 비공개 `minovation-TF/meritz-workroom`, 명함 소스는 비공개 `minovation-TF/namecard-maker`에서 관리합니다. 명함은 해당 저장소의 `pnpm build:pages` 결과인 `dist-pages/`를 `namecard-maker/`에 게시합니다. 이미지는 검증된 묶음에서 복원하며 소스 프로젝트의 서버·인증 설정은 이 정적 배포에 포함하지 않습니다.
 
 가입제안서 PDF를 브라우저 안에서 열어 형광펜, 메모, 스티커를 표시하고 PDF 또는 JPG로 저장하는 단일 페이지 도구입니다.
 
@@ -17,12 +25,7 @@
 
 ## GitHub Pages 배포
 
-이 폴더 전체를 GitHub 저장소의 `main` 브랜치에 올리면 포함된 GitHub Actions가 자동 배포합니다.
-
-1. GitHub에서 비어 있는 새 저장소를 만듭니다. 민감한 PDF 원본은 저장소에 올리지 마세요.
-2. 이 폴더의 파일을 저장소에 올립니다.
-3. 저장소의 **Settings → Pages → Source**를 **GitHub Actions**로 선택합니다.
-4. Actions의 `GitHub Pages 배포` 작업이 끝나면 공개 주소가 생성됩니다.
+현재 GitHub Pages는 `main` 브랜치의 루트를 배포하도록 설정되어 있습니다. `.nojekyll`을 유지하고, 검증된 정적 결과물을 `main`에 반영하면 GitHub의 Pages 빌드·배포가 실행됩니다. 청구 서류는 대문의 다운로드 목록에 있는 빈 양식 18종만 포함합니다. 사용자의 PDF 원본이나 명함 입력 데이터는 이 저장소에 저장하지 않습니다.
 
 ## 방문 통계
 
